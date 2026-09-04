@@ -13,7 +13,7 @@ interface LogItem {
 }
 
 const logs = computed<LogItem[]>(() => [
-  { id: 1, content: '适配v1.2.7版本客户端', version: 'v1.2.7', time: '2024-08-29' }
+  { id: 1, content: 'Compatible with RustDesk client 1.4.6', version: 'v1.4.6', time: '2026-04-20' }
 ]);
 </script>
 
