@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"rustdesk-api-server-pro/util"
@@ -77,20 +78,26 @@ func GetDefaultServerConfig() *ServerConfig {
 func GetServerConfig() *ServerConfig {
 	cfg := GetDefaultServerConfig()
 	bytes, err := os.ReadFile(yamlFile)
-	if err != nil {
+	if os.IsNotExist(err) {
 		WriteServerConfig(cfg)
 		return cfg
 	}
-
-	err = yaml.Unmarshal(bytes, cfg)
 	if err != nil {
-		WriteServerConfig(cfg)
-		return cfg
+		panic(fmt.Errorf("read server config %q: %w", yamlFile, err))
+	}
+
+	if err := yaml.Unmarshal(bytes, cfg); err != nil {
+		panic(fmt.Errorf("parse server config %q: %w", yamlFile, err))
 	}
 	return cfg
 }
 
 func WriteServerConfig(cfg *ServerConfig) {
-	bytes, _ := yaml.Marshal(cfg)
-	_ = os.WriteFile(yamlFile, bytes, 0755)
+	bytes, err := yaml.Marshal(cfg)
+	if err != nil {
+		panic(fmt.Errorf("marshal server config: %w", err))
+	}
+	if err := os.WriteFile(yamlFile, bytes, 0600); err != nil {
+		panic(fmt.Errorf("write server config %q: %w", yamlFile, err))
+	}
 }

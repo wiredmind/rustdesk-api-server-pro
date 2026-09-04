@@ -1,11 +1,21 @@
 services:
-  rustdesk-api-server-pro:
-    container_name: rustdesk-api-server-pro
-    image: ghcr.io/lantongxue/rustdesk-api-server-pro:latest
+  rustdesk-management:
+    container_name: rustdesk-management
+    build: .
+    image: ghcr.io/wiredmind/rustdesk-api-server-pro:latest
     environment:
-      - "ADMIN_USER=youruser" # optional
-      - "ADMIN_PASS=yourpassword" # optional
+      ADMIN_USER: ${ADMIN_USER:?ADMIN_USER is required}
+      ADMIN_PASS_FILE: /run/secrets/admin_password
+      TZ: ${TZ:-UTC}
     volumes:
-      - ./server.yaml:/app/server.yaml
+      - ./data:/app/data
+      - ./secrets/admin_password:/run/secrets/admin_password:ro
     network_mode: host
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped

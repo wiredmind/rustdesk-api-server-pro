@@ -1,20 +1,19 @@
 #!/bin/sh
+set -eu
 
-if [ ! -f /usr/local/bin/rustdesk-api-server-pro ]; then
-    ln -s /app/rustdesk-api-server-pro /usr/local/bin/rustdesk-api-server-pro
-fi
-
-mkdir /app/data || true
-
+umask 077
+mkdir -p /app/data
 cd /app/data
 
-#if [ ! -f /app/server.db ]; then # This is not good if one wants to upgrade instance
 /app/rustdesk-api-server-pro sync
-#fi
 
-if [ ! -f /app/data/.init.lock ] && [ -n "$ADMIN_USER" ] && [ -n "$ADMIN_PASS" ]; then
-    /app/rustdesk-api-server-pro user add $ADMIN_USER $ADMIN_PASS --admin
-    touch /app/data/.init.lock
+if [ ! -f .init.lock ] && [ -n "${ADMIN_USER:-}" ]; then
+    if [ -z "${ADMIN_PASS_FILE:-}" ]; then
+        echo "ADMIN_PASS_FILE is required when ADMIN_USER is set" >&2
+        exit 1
+    fi
+    /app/rustdesk-api-server-pro user add "$ADMIN_USER" --password-file "$ADMIN_PASS_FILE" --admin
+    touch .init.lock
 fi
 
-/app/rustdesk-api-server-pro start
+exec /app/rustdesk-api-server-pro start
