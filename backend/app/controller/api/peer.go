@@ -44,9 +44,11 @@ func (c *PeerController) GetPeers() mvc.Result {
 				"os":          p.Platform,
 				"device_name": p.Hostname,
 			},
-			"status":    status,
-			"user":      user.Username,
-			"user_name": p.LoginName,
+			"status":            status,
+			"user":              user.Username,
+			"user_name":         p.LoginName,
+			"device_group_name": p.DeviceGroupName,
+			"note":              p.Alias,
 		})
 	}
 	return mvc.Response{

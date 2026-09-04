@@ -19,6 +19,7 @@ type Peer struct {
 	RdpUsername      string    `xorm:"'rdpUsername' varchar(100)"`
 	LoginName        string    `xorm:"'loginName' varchar(100)"`
 	SameServer       bool      `xorm:"'sameServer' tinyint"`
+	DeviceGroupName  string    `xorm:"'device_group_name' varchar(255)"`
 	CreatedAt        time.Time `xorm:"'created_at' datetime created"`
 	UpdatedAt        time.Time `xorm:"'updated_at' datetime updated"`
 }
