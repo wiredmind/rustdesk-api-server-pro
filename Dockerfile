@@ -1,9 +1,12 @@
-FROM golang:1.25-alpine AS golang
+# syntax=docker/dockerfile:1
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS golang
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /backend
 COPY ./backend .
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o rustdesk-api-server-pro .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o rustdesk-api-server-pro .
 
-FROM node:22-alpine AS node
+FROM --platform=$BUILDPLATFORM node:22-alpine AS node
 WORKDIR /frontend
 COPY ./soybean-admin .
 RUN npm install --global pnpm@9.15.9 \

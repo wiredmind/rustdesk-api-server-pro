@@ -1,13 +1,15 @@
-#
 name: Docker build
 
-# This workflow runs when any of the following occur:
-# - A push is made to a branch called `main` or `seed`
-# - A tag starting with "v" is created
-# - A pull request is created or updated
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
-  # This creates an environment variable called `IMAGE_NAME ` with the value `ghtoken_product_demo`.
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IMAGE_NAME: rustdesk-api-server-pro
 #
@@ -40,4 +42,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/rustdesk-api-server-pro:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
