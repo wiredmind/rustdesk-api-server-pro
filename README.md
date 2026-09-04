@@ -83,92 +83,31 @@ E2E_ADMIN_USER=admin E2E_ADMIN_PASS=admin123456 pnpm test:e2e
 - `build-release.yml` supports optional full-stack Playwright E2E.
 - Trigger `workflow_dispatch` with `run_playwright_e2e=true`.
 
-## Deploying with Docker(recommend)
+## Deploying with Docker
 
-1. pull image
- ```shell
- docker pull ghcr.io/lantongxue/rustdesk-api-server-pro:latest
- ```
+The included Compose file builds this fork, runs it as an unprivileged user, stores state under `./data`, reads the initial administrator password from a file, and binds the API to loopback by default.
 
-2. create config
 ```shell
-cat > /your/path/server.yaml <<EOF
-signKey: "sercrethatmaycontainch@r$32chars" # this is the token signing key. change this before start server
-debugMode: true # debug mode
-db:
-  driver: "sqlite"
-  dsn: "./server.db"
-  timeZone: "Asia/Shanghai" # setting the time zone fixes the database creation time problem
-  showSql: false
-  # driver: "mysql"
-  # dsn: "root:123@tcp(localhost:3306)/test?charset=utf8mb4"
-httpConfig:
-  printRequestLog: true
-  staticdir: "/app/dist"
-  port: ":12345" # api server port
-
-smtpConfig:
-  host: "127.0.0.1"
-  port: 1025
-  username: "test"
-  password: "test"
-  encryption: "none" # none ssl/tls starttls
-  from: "test@localhost.com"
-
-jobsConfig:
-  deviceCheckJob:
-  duration: 30
-EOF
-
+mkdir -p data secrets
+read -rsp "Initial administrator password: " ADMIN_PASS
+printf '%s' "$ADMIN_PASS" > secrets/admin_password
+unset ADMIN_PASS
+chmod 600 secrets/admin_password
+sudo chown -R 10001:10001 data secrets/admin_password
+ADMIN_USER=admin docker compose up -d --build
 ```
 
-3. run image
-```shell
-docker run \
-  --name rustdesk-api-server-pro \
-  -d \
-  -e ADMIN_USER=admin \ #Administrator account (optional)
-  -e ADMIN_PASS=yourpassword \ #Administrator password (optional)
-  -e TZ=Asia/Shanghai \ #must match the 'timeZone' setting in server.yaml
-  -p 8080:8080 \
-  -v /your/path:/app/data \
-  ghcr.io/lantongxue/rustdesk-api-server-pro:latest
-```
+The password file is read only during first-time initialization. The generated `data/server.yaml` contains a random signing key and is created with mode `0600`.
 
-4. add your admin account(This step can be ignored if an environment variable is set to initialize the administrator account password, but I still recommend that you create the administrator account this way instead of initializing it with an environment variable)
-   
-```shell
-docker exec rustdesk-api-server-pro rustdesk-api-server-pro user add admin yourpassword --admin
-```
-
-> The container image listens on port `8080` by default.
-
-> Default configuration file path `/app/data/server.yaml`, you can specify your own configuration file with `-v`.
-
-### Docker compose
-
-```yaml
-services:
-  rustdesk-api-server-pro:
-    container_name: rustdesk-api-server-pro
-    image: ghcr.io/lantongxue/rustdesk-api-server-pro:latest
-    environment:
-      - "ADMIN_USER=youruser"
-      - "ADMIN_PASS=yourpassword"
-      - "TZ=Asia/Shanghai"
-    volumes:
-      - ./server.yaml:/app/data/server.yaml
-    network_mode: host
-    restart: unless-stopped
-```
+The default listener is `127.0.0.1:8080`; put an HTTPS reverse proxy in front of it. To use another loopback port, stop the container, edit `httpConfig.port` in `data/server.yaml`, and start it again.
 
 ### Environment variables
 
-| Variables  | Default Values | Description                                                    |
-|:----------:|:--------------:|:--------------------------------------------------------------:|
-| ADMIN_USER | -              | Default administrator account                                  |
-| ADMIN_PASS | -              | Default administrator password                                 |
-| TZ         | -              | Container OS timezone; must match the app setting in YAML file |
+| Variable | Default | Description |
+|:--|:--|:--|
+| `ADMIN_USER` | required on first boot | Initial administrator username |
+| `ADMIN_PASS_FILE` | `/run/secrets/admin_password` in Compose | File containing the initial administrator password |
+| `TZ` | `UTC` | Container timezone; keep it aligned with `db.timeZone` |
 
 ## Build from source
 
@@ -306,6 +245,4 @@ If you found this project helpful, why not buy the developers a cup of coffee :)
 
 ## License
 
-> You can view the full license [here](https://github.com/lantongxue/rustdesk-api-server-pro/blob/master/LICENSE)
-
-This project is under the terms of the **MIT** license.
+This fork is distributed under the [GNU Affero General Public License v3.0](https://github.com/wiredmind/rustdesk-api-server-pro/blob/master/LICENSE).

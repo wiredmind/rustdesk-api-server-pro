@@ -59,12 +59,12 @@ func GetDefaultServerConfig() *ServerConfig {
 		Db: &DbConfig{
 			Driver:   "sqlite",
 			Dsn:      "./server.db",
-			ShowSql:  true,
-			TimeZone: "Asia/Shanghai",
+			ShowSql:  false,
+			TimeZone: "UTC",
 		},
 		HttpConfig: &HttpConfig{
-			Port:      ":8080",
-			StaticDir: "dist",
+			Port:      "127.0.0.1:8080",
+			StaticDir: "/app/dist",
 		},
 		SignKey: util.RandomString(32),
 		JobsConfig: &JobsConfig{

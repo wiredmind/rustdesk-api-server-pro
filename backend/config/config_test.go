@@ -21,6 +21,12 @@ func TestGetServerConfigCreatesPrivateConfig(t *testing.T) {
 	if len(cfg.SignKey) != 32 {
 		t.Fatalf("generated sign key length = %d, want 32", len(cfg.SignKey))
 	}
+	if cfg.HttpConfig.Port != "127.0.0.1:8080" {
+		t.Fatalf("default listener = %q, want loopback", cfg.HttpConfig.Port)
+	}
+	if cfg.HttpConfig.StaticDir != "/app/dist" {
+		t.Fatalf("default static directory = %q, want /app/dist", cfg.HttpConfig.StaticDir)
+	}
 
 	info, err := os.Stat(configPath)
 	if err != nil {
