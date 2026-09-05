@@ -29,25 +29,25 @@ const rules = computed<Record<keyof Api.Form.LoginForm, App.Global.FormRule[]>>(
     username: [
       {
         required: true,
-        message: '账号不能为空'
+        message: 'Username is required'
       }
     ],
     password: [
       {
         required: true,
-        message: '密码不能为空'
+        message: 'Password is required'
       }
     ],
     code: [
       {
         required: true,
-        message: '验证码不能为空'
+        message: 'Verification code is required'
       }
     ],
     captchaId: [
       {
         required: true,
-        message: '验证码不能为空'
+        message: 'Verification code is required'
       }
     ]
   };
@@ -73,9 +73,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false">
-    <NFormItem path="userName">
-      <NInput v-model:value="model.username" :placeholder="$t('page.login.common.userNamePlaceholder')" />
+  <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false" class="auth-form">
+    <NFormItem path="username">
+      <NInput v-model:value="model.username" :placeholder="$t('page.login.common.userNamePlaceholder')">
+        <template #prefix><SvgIcon icon="solar:user-rounded-linear" /></template>
+      </NInput>
     </NFormItem>
     <NFormItem path="password">
       <NInput
@@ -83,31 +85,117 @@ onMounted(() => {
         type="password"
         show-password-on="click"
         :placeholder="$t('page.login.common.passwordPlaceholder')"
-      />
+      >
+        <template #prefix><SvgIcon icon="solar:lock-keyhole-minimalistic-linear" /></template>
+      </NInput>
     </NFormItem>
     <NFormItem path="code">
-      <NInput v-model:value="model.code" :clearable="true" :placeholder="$t('page.login.common.codePlaceholder')" />
-      <div class="pl-8px">
-        <img width="152" height="40" class="cursor-pointer" :src="captcha.img" @click="handleCaptcha" />
+      <div class="captcha-row">
+        <NInput v-model:value="model.code" clearable :placeholder="$t('page.login.common.codePlaceholder')">
+          <template #prefix><SvgIcon icon="solar:shield-keyhole-linear" /></template>
+        </NInput>
+        <button class="captcha-frame" type="button" title="Refresh verification code" @click="handleCaptcha">
+          <img width="152" height="40" :src="captcha.img" alt="Verification code" />
+        </button>
       </div>
     </NFormItem>
-    <NSpace vertical :size="24">
-      <div class="flex-y-center justify-between">
-        <NCheckbox>{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
-      </div>
-      <NButton
-        attr-type="submit"
-        type="primary"
-        size="large"
-        round
-        block
-        :loading="authStore.loginLoading"
-        @click="handleSubmit"
-      >
+    <div class="form-meta">
+      <NCheckbox>{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
+      <span>Protected access</span>
+    </div>
+    <NButton
+      attr-type="submit"
+      type="primary"
+      size="large"
+      block
+      :loading="authStore.loginLoading"
+      class="submit-button"
+      @click="handleSubmit"
+    >
+      <span class="inline-flex items-center gap-8px">
         {{ $t('common.confirm') }}
-      </NButton>
-    </NSpace>
+        <SvgIcon icon="solar:arrow-right-linear" />
+      </span>
+    </NButton>
   </NForm>
 </template>
 
-<style scoped></style>
+<style scoped>
+.auth-form :deep(.n-form-item) {
+  margin-bottom: 5px;
+}
+
+.auth-form :deep(.n-input) {
+  min-height: 48px;
+  border: 1px solid var(--surface-border);
+  background: rgba(15, 23, 42, 0.58) !important;
+}
+
+.auth-form :deep(.n-input__prefix) {
+  margin-right: 8px;
+  color: var(--accent-bright);
+  font-size: 18px;
+}
+
+.captcha-row {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) 134px;
+  gap: 10px;
+}
+
+.captcha-frame {
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid var(--surface-border);
+  border-radius: 11px;
+  background: #f8fafc;
+  cursor: pointer;
+  padding: 3px;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.captcha-frame:hover {
+  border-color: var(--surface-border-strong);
+  transform: translateY(-1px);
+}
+
+.captcha-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.form-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 20px;
+}
+
+.form-meta > span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.submit-button {
+  min-height: 49px;
+  font-size: 14px;
+  letter-spacing: 0.015em;
+}
+
+@media (max-width: 420px) {
+  .captcha-row {
+    grid-template-columns: 1fr;
+  }
+
+  .captcha-frame {
+    width: 100%;
+  }
+}
+</style>

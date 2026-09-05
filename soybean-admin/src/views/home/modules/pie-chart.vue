@@ -30,7 +30,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
-        borderColor: '#fff',
+        borderColor: 'transparent',
         borderWidth: 1
       },
       emphasis: {
@@ -54,7 +54,7 @@ async function fetchChartsData() {
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 10,
-          borderColor: '#fff',
+          borderColor: 'transparent',
           borderWidth: 1
         },
         emphasis: {

@@ -1,15 +1,15 @@
 /** Default theme settings */
 export const themeSettings: App.Theme.ThemeSetting = {
-  themeScheme: 'light',
+  themeScheme: 'dark',
   grayscale: false,
   colourWeakness: false,
   recommendColor: false,
-  themeColor: '#646cff',
+  themeColor: '#8b5cf6',
   otherColor: {
-    info: '#2080f0',
-    success: '#52c41a',
-    warning: '#faad14',
-    error: '#f5222d'
+    info: '#38bdf8',
+    success: '#34d399',
+    warning: '#fbbf24',
+    error: '#fb7185'
   },
   isInfoFollowPrimary: true,
   layout: {
@@ -22,7 +22,7 @@ export const themeSettings: App.Theme.ThemeSetting = {
     animateMode: 'fade-slide'
   },
   header: {
-    height: 56,
+    height: 68,
     breadcrumb: {
       visible: true,
       showIcon: true
@@ -32,19 +32,19 @@ export const themeSettings: App.Theme.ThemeSetting = {
     visible: true,
     cache: true,
     height: 44,
-    mode: 'chrome'
+    mode: 'button'
   },
   fixedHeaderAndTab: true,
   sider: {
     inverted: false,
-    width: 220,
-    collapsedWidth: 64,
-    mixWidth: 90,
-    mixCollapsedWidth: 64,
-    mixChildMenuWidth: 200
+    width: 252,
+    collapsedWidth: 72,
+    mixWidth: 96,
+    mixCollapsedWidth: 72,
+    mixChildMenuWidth: 220
   },
   footer: {
-    visible: true,
+    visible: false,
     fixed: false,
     height: 48,
     right: true
@@ -57,21 +57,22 @@ export const themeSettings: App.Theme.ThemeSetting = {
     light: {
       colors: {
         container: 'rgb(255, 255, 255)',
-        layout: 'rgb(247, 250, 252)',
-        inverted: 'rgb(0, 20, 40)',
-        'base-text': 'rgb(31, 31, 31)'
+        layout: 'rgb(244, 247, 252)',
+        inverted: 'rgb(10, 12, 24)',
+        'base-text': 'rgb(18, 24, 38)'
       },
       boxShadow: {
-        header: '0 1px 2px rgb(0, 21, 41, 0.08)',
-        sider: '2px 0 8px 0 rgb(29, 35, 41, 0.05)',
-        tab: '0 1px 2px rgb(0, 21, 41, 0.08)'
+        header: '0 12px 40px rgb(15, 23, 42, 0.08)',
+        sider: '12px 0 40px rgb(15, 23, 42, 0.08)',
+        tab: '0 8px 24px rgb(15, 23, 42, 0.06)'
       }
     },
     dark: {
       colors: {
-        container: 'rgb(28, 28, 28)',
-        layout: 'rgb(18, 18, 18)',
-        'base-text': 'rgb(224, 224, 224)'
+        container: 'rgb(11, 15, 28)',
+        layout: 'rgb(4, 7, 17)',
+        inverted: 'rgb(4, 7, 17)',
+        'base-text': 'rgb(226, 232, 240)'
       }
     }
   }
@@ -82,4 +83,13 @@ export const themeSettings: App.Theme.ThemeSetting = {
  *
  * If publish new version, use `overrideThemeSettings` to override certain theme settings
  */
-export const overrideThemeSettings: Partial<App.Theme.ThemeSetting> = {};
+export const overrideThemeSettings: Partial<App.Theme.ThemeSetting> = {
+  themeScheme: 'dark',
+  themeColor: '#8b5cf6',
+  layout: themeSettings.layout,
+  header: themeSettings.header,
+  tab: themeSettings.tab,
+  sider: themeSettings.sider,
+  footer: themeSettings.footer,
+  tokens: themeSettings.tokens
+};

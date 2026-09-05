@@ -28,9 +28,9 @@ function refresh() {
 </script>
 
 <template>
-  <NSpace :align="itemAlign" wrap justify="end" class="lt-sm:w-200px">
+  <NSpace :align="itemAlign" wrap justify="end" class="toolbar-actions lt-sm:w-full">
     <slot name="prefix"></slot>
-    <NButton size="small" @click="refresh">
+    <NButton type="primary" secondary size="small" @click="refresh">
       <template #icon>
         <icon-mdi-refresh class="text-icon" :class="{ 'animate-spin': loading }" />
       </template>
@@ -41,4 +41,9 @@ function refresh() {
   </NSpace>
 </template>
 
-<style scoped></style>
+<style scoped>
+.toolbar-actions :deep(.n-button) {
+  min-height: 34px;
+  padding-inline: 12px;
+}
+</style>

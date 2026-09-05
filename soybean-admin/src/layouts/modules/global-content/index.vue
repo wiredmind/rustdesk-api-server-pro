@@ -47,8 +47,8 @@ function resetScroll() {
           :is="Component"
           v-if="appStore.reloadFlag"
           :key="tabStore.getTabIdByRoute(route)"
-          :class="{ 'p-16px': showPadding }"
-          class="flex-grow bg-layout transition-300"
+          :class="showPadding ? 'px-16px py-18px sm:px-24px sm:py-22px' : ''"
+          class="aceternity-content flex-grow bg-layout transition-300"
         />
       </KeepAlive>
     </Transition>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { NConfigProvider, darkTheme } from 'naive-ui';
 import type { WatermarkProps } from 'naive-ui';
 import { useAppStore } from './store/modules/app';
@@ -37,6 +37,26 @@ const watermarkProps = computed<WatermarkProps>(() => {
     rotate: -15,
     zIndex: 9999
   };
+});
+let pointerFrame: number | undefined;
+
+function updateAmbientPosition(event: PointerEvent) {
+  if (pointerFrame !== undefined) return;
+
+  pointerFrame = window.requestAnimationFrame(() => {
+    document.documentElement.style.setProperty('--ambient-x', `${event.clientX}px`);
+    document.documentElement.style.setProperty('--ambient-y', `${event.clientY}px`);
+    pointerFrame = undefined;
+  });
+}
+
+onMounted(() => {
+  window.addEventListener('pointermove', updateAmbientPosition, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('pointermove', updateAmbientPosition);
+  if (pointerFrame !== undefined) window.cancelAnimationFrame(pointerFrame);
 });
 </script>
 

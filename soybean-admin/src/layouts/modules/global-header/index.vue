@@ -30,12 +30,16 @@ const { isFullscreen, toggle } = useFullscreen();
 </script>
 
 <template>
-  <DarkModeContainer class="h-full flex-y-center px-12px shadow-header">
+  <DarkModeContainer class="app-header h-full flex-y-center px-16px shadow-header">
     <GlobalLogo v-if="showLogo" class="h-full" :style="{ width: themeStore.sider.width + 'px' }" />
     <MenuToggler v-if="showMenuToggler" :collapsed="appStore.siderCollapse" @click="appStore.toggleSiderCollapse" />
     <div v-if="showMenu" :id="GLOBAL_HEADER_MENU_ID" class="h-full flex-y-center flex-1-hidden"></div>
     <div v-else class="h-full flex-y-center flex-1-hidden">
       <GlobalBreadcrumb v-if="!appStore.isMobile" class="ml-12px" />
+      <div v-if="!appStore.isMobile" class="header-status ml-18px">
+        <span class="status-dot"></span>
+        Private cloud online
+      </div>
     </div>
     <div class="h-full flex-y-center justify-end">
       <GlobalSearch />
@@ -52,4 +56,22 @@ const { isFullscreen, toggle } = useFullscreen();
   </DarkModeContainer>
 </template>
 
-<style scoped></style>
+<style scoped>
+.header-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  padding: 7px 11px;
+}
+
+.app-header :deep(.n-button) {
+  margin-inline: 2px;
+}
+</style>

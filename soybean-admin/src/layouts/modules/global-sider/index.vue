@@ -20,14 +20,63 @@ const menuWrapperClass = computed(() => (showLogo.value ? 'flex-1-hidden' : 'h-f
 </script>
 
 <template>
-  <DarkModeContainer class="size-full flex-col-stretch shadow-sider" :inverted="darkMenu">
+  <DarkModeContainer class="app-sider size-full flex-col-stretch shadow-sider" :inverted="darkMenu">
     <GlobalLogo
       v-if="showLogo"
       :show-title="!appStore.siderCollapse"
       :style="{ height: themeStore.header.height + 'px' }"
     />
     <div :id="GLOBAL_SIDER_MENU_ID" :class="menuWrapperClass"></div>
+    <div v-if="!appStore.siderCollapse" class="sider-signal">
+      <div class="signal-icon">
+        <SvgIcon icon="solar:shield-check-bold-duotone" />
+      </div>
+      <div>
+        <strong>Private relay</strong>
+        <span>Identity preserved</span>
+      </div>
+    </div>
   </DarkModeContainer>
 </template>
 
-<style scoped></style>
+<style scoped>
+.sider-signal {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 10px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.13), rgba(34, 211, 238, 0.05));
+  padding: 12px;
+}
+
+.signal-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(139, 92, 246, 0.18);
+  color: var(--accent-bright);
+  font-size: 20px;
+}
+
+.sider-signal strong,
+.sider-signal span {
+  display: block;
+}
+
+.sider-signal strong {
+  color: var(--text-strong);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.sider-signal span {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+</style>
