@@ -458,7 +458,7 @@ declare namespace App {
             file: string;
             mirror: string;
             terminal: string;
-            commandPlaceholder: string;
+            terminalHint: string;
             launched: string;
             failed: string;
             missingId: string;

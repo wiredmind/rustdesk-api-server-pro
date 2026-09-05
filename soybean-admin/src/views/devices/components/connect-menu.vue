@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { NPopover, NSelect, NInput, useMessage } from 'naive-ui';
+import { ref } from 'vue';
+import { NPopover, useMessage } from 'naive-ui';
 import { $t } from '@/locales';
 
 interface Props {
@@ -12,19 +12,21 @@ const props = defineProps<Props>();
 
 const message = useMessage();
 const popoverVisible = ref(false);
-const selectedShell = ref('powershell');
-const customCommand = ref('');
-
-const shellOptions = computed(() => [
-  { label: 'Windows PowerShell', value: 'powershell' },
-  { label: 'Command Prompt (cmd.exe)', value: 'cmd' },
-  { label: 'Windows Terminal', value: 'wt' },
-  { label: 'PowerShell Core (pwsh)', value: 'pwsh' },
-  { label: 'Bash (WSL)', value: 'bash' },
-  { label: 'SSH (system shell)', value: 'system' }
-]);
 
 type ConnectAction = 'remote' | 'file' | 'mirror' | 'terminal';
+
+// Maps a portal action to the RustDesk client's own rustdesk://<authority>/<id>
+// uni-link scheme, as read from the RustDesk client source (core_main.rs):
+// --connect, --play, --file-transfer map to authorities "connect", "play",
+// "file-transfer"; the built-in terminal session uses the "terminal"
+// authority (confirmed by the RustDesk maintainers). There is no supported
+// way to inject or execute an arbitrary shell command through this link.
+const actionAuthority: Record<ConnectAction, string> = {
+  remote: 'connect',
+  file: 'file-transfer',
+  mirror: 'play',
+  terminal: 'terminal'
+};
 
 function actionTitle(action: ConnectAction): string {
   switch (action) {
@@ -39,16 +41,12 @@ function actionTitle(action: ConnectAction): string {
   }
 }
 
-function launch(action: ConnectAction, shell?: string, command?: string) {
+function launch(action: ConnectAction) {
   if (!props.rustdeskId) {
     message.warning($t('page.devices.connect.missingId' as App.I18n.I18nKey));
     return;
   }
-  const params = new URLSearchParams();
-  if (action === 'terminal' && shell) params.set('shell', shell);
-  if (action === 'terminal' && command) params.set('command', command);
-  const query = params.toString();
-  const url = `rustdesk://connection/new/${props.rustdeskId}${query ? `?${query}` : ''}`;
+  const url = `rustdesk://${actionAuthority[action]}/${props.rustdeskId}`;
   try {
     window.open(url, '_blank', 'noopener,noreferrer');
     message.success(
@@ -61,10 +59,6 @@ function launch(action: ConnectAction, shell?: string, command?: string) {
     message.error($t('page.devices.connect.failed' as App.I18n.I18nKey));
   }
   popoverVisible.value = false;
-}
-
-function launchTerminal() {
-  launch('terminal', selectedShell.value, customCommand.value.trim());
 }
 
 function copyId() {
@@ -103,7 +97,7 @@ function copyId() {
           <SvgIcon icon="solar:monitor-smartphone-bold-duotone" />
           <div>
             <strong>{{ $t('page.devices.connect.remote' as App.I18n.I18nKey) }}</strong>
-            <small>Launch viewer</small>
+            <small>Full control</small>
           </div>
         </button>
         <button class="connect-card" type="button" @click="launch('file')">
@@ -120,7 +114,14 @@ function copyId() {
             <small>View only session</small>
           </div>
         </button>
-        <button class="connect-card" type="button" @click="copyId">
+        <button class="connect-card" type="button" @click="launch('terminal')">
+          <SvgIcon icon="solar:programming-bold-duotone" />
+          <div>
+            <strong>{{ $t('page.devices.connect.terminal' as App.I18n.I18nKey) }}</strong>
+            <small>RustDesk built-in shell</small>
+          </div>
+        </button>
+        <button class="connect-card connect-card-wide" type="button" @click="copyId">
           <SvgIcon icon="solar:copy-bold-duotone" />
           <div>
             <strong>Copy ID</strong>
@@ -129,19 +130,9 @@ function copyId() {
         </button>
       </section>
 
-      <section class="connect-popover-terminal">
-        <span class="connect-popover-eyebrow">Run as system shell</span>
-        <NSelect v-model:value="selectedShell" :options="shellOptions" />
-        <NInput v-model:value="customCommand" :placeholder="$t('page.devices.connect.commandPlaceholder' as App.I18n.I18nKey)" />
-        <button class="connect-terminal-launch" type="button" @click="launchTerminal">
-          <SvgIcon icon="solar:play-circle-bold-duotone" />
-          <span>{{ $t('page.devices.connect.terminal' as App.I18n.I18nKey) }}</span>
-        </button>
-      </section>
-
       <footer class="connect-popover-foot">
         <SvgIcon icon="solar:info-circle-linear" />
-        <span>Runs <strong>elevated</strong> on the remote Windows host via RustDesk client.</span>
+        <span>{{ $t('page.devices.connect.terminalHint' as App.I18n.I18nKey) }}</span>
       </footer>
     </div>
   </NPopover>
@@ -239,6 +230,10 @@ function copyId() {
     background-color 200ms ease;
 }
 
+.connect-card-wide {
+  grid-column: 1 / -1;
+}
+
 .connect-card:hover {
   border-color: var(--surface-border-strong);
   background: rgba(139, 92, 246, 0.1);
@@ -269,56 +264,24 @@ function copyId() {
   text-transform: uppercase;
 }
 
-.connect-popover-terminal {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid var(--surface-border);
-  padding-top: 14px;
-}
-
-.connect-terminal-launch {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(34, 211, 238, 0.32);
-  border-radius: 11px;
-  background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(139, 92, 246, 0.18));
-  color: var(--accent-cyan);
-  font-size: 12px;
-  font-weight: 760;
-  letter-spacing: 0.04em;
-  padding: 9px 12px;
-  transition:
-    border-color 200ms ease,
-    transform 200ms ease;
-}
-
-.connect-terminal-launch:hover {
-  border-color: var(--accent-cyan);
-  transform: translateY(-1px);
-}
-
 .connect-popover-foot {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 4px;
+  border-top: 1px solid var(--surface-border);
+  padding-top: 14px;
   color: var(--text-muted);
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
 }
 
 .connect-popover-foot :deep(svg) {
+  flex: 0 0 auto;
+  margin-top: 1px;
   color: var(--accent-cyan);
   font-size: 14px;
-}
-
-.connect-popover-foot strong {
-  color: var(--text-strong);
-  font-weight: 760;
 }
 </style>

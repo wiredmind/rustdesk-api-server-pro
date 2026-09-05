@@ -146,8 +146,22 @@ func (c *DevicesController) HandleList() mvc.Result {
 type connectRequest struct {
 	RustdeskId string `json:"rustdesk_id"`
 	Action     string `json:"action"`
-	Shell      string `json:"shell"`
-	Command    string `json:"command"`
+}
+
+// deviceActionAuthority maps a portal action to the RustDesk client's own
+// rustdesk://<authority>/<id> uni-link scheme. These authorities are read
+// directly from the RustDesk client source (core_main.rs): --connect,
+// --play, --file-transfer map to "connect", "play", "file-transfer"; the
+// built-in terminal session uses the "terminal" authority (confirmed by the
+// RustDesk maintainers). There is no supported way to inject or execute an
+// arbitrary shell command through this link - the terminal authority only
+// opens RustDesk's own terminal UI, gated by the remote device's
+// "enable-terminal" permission.
+var deviceActionAuthority = map[string]string{
+	"remote":   "connect",
+	"file":     "file-transfer",
+	"mirror":   "play",
+	"terminal": "terminal",
 }
 
 func (c *DevicesController) HandleConnect() mvc.Result {
@@ -158,16 +172,16 @@ func (c *DevicesController) HandleConnect() mvc.Result {
 	if req.RustdeskId == "" {
 		return c.Error(nil, "RustdeskIdEmpty")
 	}
-	if req.Action == "" {
-		req.Action = "remote-desktop"
+	authority, ok := deviceActionAuthority[req.Action]
+	if !ok {
+		authority = "connect"
+		req.Action = "remote"
 	}
 	return c.Success(iris.Map{
 		"rustdesk_id": req.RustdeskId,
-		"action":       req.Action,
-		"shell":        req.Shell,
-		"command":      req.Command,
-		"client_url":   buildClientURL(req.RustdeskId, req.Action, req.Shell, req.Command),
-		"scheme":       "rustdesk",
+		"action":      req.Action,
+		"client_url":  "rustdesk://" + authority + "/" + req.RustdeskId,
+		"scheme":      "rustdesk",
 	}, "ok")
 }
 
@@ -176,18 +190,4 @@ func formatTime(t time.Time) string {
 		return ""
 	}
 	return t.Format(config.TimeFormat)
-}
-
-func buildClientURL(rustdeskID, action, shell, command string) string {
-	// The official RustDesk client does not expose a CLI/headless connection API.
-	// Returning a rustdesk:// scheme URL keeps the action recorded; admins with a
-	// configured RustDesk client on the browser host can invoke it directly.
-	base := "rustdesk://connection/new/" + rustdeskID
-	if action == "terminal" && shell != "" {
-		base += "?shell=" + shell
-		if command != "" {
-			base += "&command=" + command
-		}
-	}
-	return base
 }
