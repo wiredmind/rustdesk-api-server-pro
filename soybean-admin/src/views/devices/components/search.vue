@@ -14,8 +14,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 
 const { formRef } = useNaiveForm();
-
-const model = defineModel<Api.Devices.DeviceSearchParams>('model', { required: true });
+const model = defineModel<Record<string, any>>('model', { required: true });
 
 async function reset() {
   emit('reset');
@@ -32,33 +31,52 @@ async function search() {
       <span class="search-icon"><SvgIcon icon="solar:magnifer-linear" /></span>
       <div>
         <strong>Find a computer</strong>
-        <span>Filter by name, operator or RustDesk ID</span>
+        <span>Sort, search and filter your private fleet</span>
       </div>
     </div>
     <NForm ref="formRef" :model="model" label-placement="top">
       <NGrid :x-gap="12" :y-gap="10" responsive="screen" item-responsive>
-        <NFormItemGi span="24 s:12 l:6" :label="$t('dataMap.device.hostname')" path="hostname">
-          <NInput v-model:value="model.hostname" clearable placeholder="Computer name" />
+        <NFormItemGi span="24 s:12 l:6" label="Quick search" path="keyword">
+          <NInput v-model:value="model.keyword" clearable placeholder="Search hostname, operator, ID, OS, last user" />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" :label="$t('dataMap.device.username')" path="username">
-          <NInput v-model:value="model.username" clearable placeholder="Operator" />
+        <NFormItemGi span="24 s:12 l:6" label="Status" path="online">
+          <NSelect
+            v-model:value="model.online"
+            :options="[
+              { label: 'Online', value: 'online' },
+              { label: 'Offline', value: 'offline' }
+            ]"
+            clearable
+            placeholder="Any"
+          />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" :label="$t('dataMap.device.rustdesk_id')" path="rustdesk_id">
+        <NFormItemGi span="24 s:12 l:6" label="Operating system" path="os">
+          <NInput v-model:value="model.os" clearable placeholder="Windows 11 Pro, Ubuntu 24.04, macOS 15" />
+        </NFormItemGi>
+        <NFormItemGi span="24 s:12 l:6" label="RustDesk version" path="version">
+          <NInput v-model:value="model.version" clearable placeholder="1.4.6" />
+        </NFormItemGi>
+        <NFormItemGi span="24 s:12 l:6" label="Operator" path="username">
+          <NInput v-model:value="model.username" clearable placeholder="Current operator" />
+        </NFormItemGi>
+        <NFormItemGi span="24 s:12 l:6" label="Last signed-in user" path="last_user">
+          <NInput v-model:value="model.last_user" clearable placeholder="Most recent user" />
+        </NFormItemGi>
+        <NFormItemGi span="24 s:12 l:6" label="Computer name" path="hostname">
+          <NInput v-model:value="model.hostname" clearable placeholder="fdl-badrib" />
+        </NFormItemGi>
+        <NFormItemGi span="24 s:12 l:6" label="RustDesk ID" path="rustdesk_id">
           <NInput v-model:value="model.rustdesk_id" clearable placeholder="000 000 000" />
         </NFormItemGi>
         <NFormItemGi span="24 s:12 l:6" class="action-field">
           <NSpace class="w-full" justify="end">
             <NButton @click="reset">
-              <template #icon>
-                <icon-ic-round-refresh class="text-icon" />
-              </template>
-              {{ $t('common.reset') }}
+              <template #icon><icon-ic-round-refresh class="text-icon" /></template>
+              Reset
             </NButton>
             <NButton type="primary" @click="search">
-              <template #icon>
-                <icon-ic-round-search class="text-icon" />
-              </template>
-              {{ $t('common.search') }}
+              <template #icon><icon-ic-round-search class="text-icon" /></template>
+              Search
             </NButton>
           </NSpace>
         </NFormItemGi>

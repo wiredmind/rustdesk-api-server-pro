@@ -67,6 +67,7 @@ func (c *SystemController) PostHeartbeat() mvc.Result {
 		device.Uuid = form.Uuid
 		device.Conns = len(form.Conns)
 		device.IsOnline = true
+		device.LastOnline = time.Now()
 		_, err = c.Db.Insert(&device)
 		if err != nil {
 			return mvc.Response{
@@ -77,10 +78,12 @@ func (c *SystemController) PostHeartbeat() mvc.Result {
 		}
 	}
 
-	_, err = c.Db.Where("rustdesk_id = ?", form.RustdeskId).Cols("is_online", "conns").Update(&model.Device{
-		IsOnline: true,
-		Conns:    len(form.Conns),
+	_, err = c.Db.Where("rustdesk_id = ?", form.RustdeskId).Cols("is_online", "conns", "last_online").Update(&model.Device{
+		IsOnline:   true,
+		Conns:      len(form.Conns),
+		LastOnline: time.Now(),
 	})
+
 	if err != nil {
 		return mvc.Response{
 			Object: iris.Map{

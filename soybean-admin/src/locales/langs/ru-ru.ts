@@ -190,6 +190,42 @@ const local: App.I18n.Schema = {
         rememberMe: 'Запомнить меня'
       }
     },
+    devices: {
+      table: {
+        columns: {
+          user: 'Current operator',
+          lastUser: 'Last signed-in user',
+          lastOnline: 'Last online',
+          status: 'Status'
+        },
+        status: {
+          online: 'Online',
+          offline: 'Offline'
+        },
+        actions: {
+          connect: 'Connect'
+        },
+        bulk: {
+          empty: 'Select at least one computer',
+          copied: 'Copied {count} RustDesk ID(s)',
+          copy: 'Copy IDs'
+        }
+      },
+      connect: {
+        cta: 'Connect',
+        remote: 'Remote desktop',
+        file: 'File transfer',
+        mirror: 'Screen mirror',
+        terminal: 'Terminal (system)',
+        commandPlaceholder: 'Optional: pre-fill command (run as SYSTEM)',
+        launched: 'Connecting to {host} via {action}',
+        failed: 'Failed to launch connection',
+        missingId: 'RustDesk ID is required',
+        copied: 'Copied {id}'
+      }
+    },
+
+
     home: {
       greeting: 'Доброго утра, {userName}, сегодня еще один день, полный приключений!',
       friendlySponsorship: 'Дружеское спонсорство',

@@ -431,6 +431,40 @@ declare namespace App {
           oneWeek: string;
           changeLogs: string;
         };
+        devices?: {
+          table: {
+            columns: {
+              user: string;
+              lastUser: string;
+              lastOnline: string;
+              status: string;
+            };
+            status: {
+              online: string;
+              offline: string;
+            };
+            actions: {
+              connect: string;
+            };
+            bulk: {
+              empty: string;
+              copied: string;
+              copy: string;
+            };
+          };
+          connect: {
+            cta: string;
+            remote: string;
+            file: string;
+            mirror: string;
+            terminal: string;
+            commandPlaceholder: string;
+            launched: string;
+            failed: string;
+            missingId: string;
+            copied: string;
+          };
+        };
         user: {
           list: {
             addUser: string;

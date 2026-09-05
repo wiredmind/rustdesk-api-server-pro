@@ -4,6 +4,7 @@ import (
 	"rustdesk-api-server-pro/app/model"
 	"rustdesk-api-server-pro/config"
 	"rustdesk-api-server-pro/db"
+	"time"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/mvc"
@@ -16,14 +17,48 @@ type DevicesController struct {
 
 func (c *DevicesController) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("GET", "/devices/list", "HandleList")
+	b.Handle("POST", "/devices/connect", "HandleConnect")
+}
+
+var deviceSortableColumns = map[string]bool{
+	"":            true,
+	"id":          true,
+	"hostname":    true,
+	"rustdesk_id": true,
+	"username":    true,
+	"version":     true,
+	"os":          true,
+	"memory":      true,
+	"last_user":   true,
+	"last_online": true,
+	"is_online":   true,
+	"created_at":  true,
 }
 
 func (c *DevicesController) HandleList() mvc.Result {
 	currentPage := c.Ctx.URLParamIntDefault("current", 1)
-	pageSize := c.Ctx.URLParamIntDefault("size", 10)
+	pageSize := c.Ctx.URLParamIntDefault("size", 15)
 	hostname := c.Ctx.URLParamDefault("hostname", "")
 	username := c.Ctx.URLParamDefault("username", "")
 	rustdesk_id := c.Ctx.URLParamDefault("rustdesk_id", "")
+	last_user := c.Ctx.URLParamDefault("last_user", "")
+	version := c.Ctx.URLParamDefault("version", "")
+	os := c.Ctx.URLParamDefault("os", "")
+	online := c.Ctx.URLParamDefault("online", "")
+	keyword := c.Ctx.URLParamDefault("keyword", "")
+	sortBy := c.Ctx.URLParamDefault("sort_by", "")
+	sortOrder := c.Ctx.URLParamDefault("sort_order", "")
+
+	if !deviceSortableColumns[sortBy] {
+		sortBy = ""
+	}
+	if sortOrder != "asc" && sortOrder != "desc" {
+		sortOrder = ""
+	}
+	if pageSize <= 0 || pageSize > 200 {
+		pageSize = 15
+	}
+
 	query := func() *xorm.Session {
 		q := c.Db.Table(&model.Device{})
 
@@ -36,30 +71,68 @@ func (c *DevicesController) HandleList() mvc.Result {
 		if rustdesk_id != "" {
 			q.Where("rustdesk_id LIKE ?", "%"+rustdesk_id+"%")
 		}
-		q.Asc("username")
+		if last_user != "" {
+			q.Where("last_user LIKE ?", "%"+last_user+"%")
+		}
+		if version != "" {
+			q.Where("version = ?", version)
+		}
+		if os != "" {
+			q.Where("os LIKE ?", "%"+os+"%")
+		}
+		switch online {
+		case "online":
+			q.Where("is_online = ?", 1)
+		case "offline":
+			q.Where("is_online = ?", 0)
+		}
+		if keyword != "" {
+			like := "%" + keyword + "%"
+			q.Where(
+				"hostname LIKE ? OR rustdesk_id LIKE ? OR username LIKE ? OR last_user LIKE ? OR os LIKE ?",
+				like, like, like, like, like,
+			)
+		}
+
+		order := sortBy
+		if order == "" {
+			order = "is_online DESC, last_online DESC, id DESC"
+		} else {
+			switch sortOrder {
+			case "asc":
+				order = sortBy + " ASC"
+			default:
+				order = sortBy + " DESC"
+			}
+		}
+		q.OrderBy(order)
 		return q
 	}
 
 	pagination := db.NewPagination(currentPage, pageSize)
 	deviceList := make([]model.Device, 0)
-
-	err := pagination.Paginate(query, &model.Audit{}, &deviceList)
+	err := pagination.Paginate(query, &model.Device{}, &deviceList)
 	if err != nil {
 		return c.Error(nil, err.Error())
 	}
 
-	list := make([]iris.Map, 0)
-	for _, a := range deviceList {
+	list := make([]iris.Map, 0, len(deviceList))
+	for _, d := range deviceList {
 		list = append(list, iris.Map{
-			"id":          a.Id,
-			"rustdesk_id": a.RustdeskId,
-			"hostname":    a.Hostname,
-			"username":    a.Username,
-			"uuid":        a.Uuid,
-			"version":     a.Version,
-			"os":          a.Os,
-			"memory":      a.Memory,
-			"created_at":  a.CreatedAt.Format(config.TimeFormat),
+			"id":          d.Id,
+			"rustdesk_id": d.RustdeskId,
+			"hostname":    d.Hostname,
+			"username":    d.Username,
+			"uuid":        d.Uuid,
+			"version":     d.Version,
+			"os":          d.Os,
+			"memory":      d.Memory,
+			"cpu":         d.Cpu,
+			"last_user":   d.LastUser,
+			"last_online": formatTime(d.LastOnline),
+			"is_online":   d.IsOnline,
+			"conns":       d.Conns,
+			"created_at":  d.CreatedAt.Format(config.TimeFormat),
 		})
 	}
 	return c.Success(iris.Map{
@@ -68,4 +141,53 @@ func (c *DevicesController) HandleList() mvc.Result {
 		"current": currentPage,
 		"size":    pageSize,
 	}, "ok")
+}
+
+type connectRequest struct {
+	RustdeskId string `json:"rustdesk_id"`
+	Action     string `json:"action"`
+	Shell      string `json:"shell"`
+	Command    string `json:"command"`
+}
+
+func (c *DevicesController) HandleConnect() mvc.Result {
+	var req connectRequest
+	if err := c.Ctx.ReadJSON(&req); err != nil {
+		return c.Error(nil, err.Error())
+	}
+	if req.RustdeskId == "" {
+		return c.Error(nil, "RustdeskIdEmpty")
+	}
+	if req.Action == "" {
+		req.Action = "remote-desktop"
+	}
+	return c.Success(iris.Map{
+		"rustdesk_id": req.RustdeskId,
+		"action":       req.Action,
+		"shell":        req.Shell,
+		"command":      req.Command,
+		"client_url":   buildClientURL(req.RustdeskId, req.Action, req.Shell, req.Command),
+		"scheme":       "rustdesk",
+	}, "ok")
+}
+
+func formatTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(config.TimeFormat)
+}
+
+func buildClientURL(rustdeskID, action, shell, command string) string {
+	// The official RustDesk client does not expose a CLI/headless connection API.
+	// Returning a rustdesk:// scheme URL keeps the action recorded; admins with a
+	// configured RustDesk client on the browser host can invoke it directly.
+	base := "rustdesk://connection/new/" + rustdeskID
+	if action == "terminal" && shell != "" {
+		base += "?shell=" + shell
+		if command != "" {
+			base += "&command=" + command
+		}
+	}
+	return base
 }
