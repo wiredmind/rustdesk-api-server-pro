@@ -164,6 +164,17 @@ var deviceActionAuthority = map[string]string{
 	"terminal": "terminal",
 }
 
+// buildConnectURL resolves a portal action into the RustDesk uni-link the
+// browser should open, falling back to a full-control connect for any
+// unrecognized action.
+func buildConnectURL(action, rustdeskID string) (resolvedAction, clientURL string) {
+	authority, ok := deviceActionAuthority[action]
+	if !ok {
+		return "remote", "rustdesk://connect/" + rustdeskID
+	}
+	return action, "rustdesk://" + authority + "/" + rustdeskID
+}
+
 func (c *DevicesController) HandleConnect() mvc.Result {
 	var req connectRequest
 	if err := c.Ctx.ReadJSON(&req); err != nil {
@@ -172,15 +183,11 @@ func (c *DevicesController) HandleConnect() mvc.Result {
 	if req.RustdeskId == "" {
 		return c.Error(nil, "RustdeskIdEmpty")
 	}
-	authority, ok := deviceActionAuthority[req.Action]
-	if !ok {
-		authority = "connect"
-		req.Action = "remote"
-	}
+	resolvedAction, clientURL := buildConnectURL(req.Action, req.RustdeskId)
 	return c.Success(iris.Map{
 		"rustdesk_id": req.RustdeskId,
-		"action":      req.Action,
-		"client_url":  "rustdesk://" + authority + "/" + req.RustdeskId,
+		"action":      resolvedAction,
+		"client_url":  clientURL,
 		"scheme":      "rustdesk",
 	}, "ok")
 }
