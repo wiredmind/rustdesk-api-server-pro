@@ -408,7 +408,7 @@ function copySelectedIds() {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 999px;
   background: var(--surface-muted);
   color: var(--text-muted);
@@ -417,14 +417,13 @@ function copySelectedIds() {
   letter-spacing: 0.05em;
   padding: 8px 8px 8px 14px;
   transition:
-    border-color 200ms ease,
-    background-color 200ms ease;
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 .selection-pill.is-active {
-  border-color: rgba(139, 92, 246, 0.42);
-  background: rgba(139, 92, 246, 0.16);
-  color: var(--accent-bright);
+  background: var(--accent-bright);
+  color: #ffffff;
 }
 
 .selection-pill strong {
@@ -448,7 +447,7 @@ function copySelectedIds() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 999px;
   background: var(--surface);
   color: var(--text-strong);
@@ -456,11 +455,21 @@ function copySelectedIds() {
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 6px 12px;
-  transition: opacity 200ms ease, transform 200ms ease;
+  box-shadow: var(--shadow-hard-sm);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
 }
 
 .selection-pill-action:hover:not([disabled]) {
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--shadow-color);
+}
+
+.selection-pill-action:active:not([disabled]) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 0 var(--shadow-color);
 }
 
 .selection-pill-action[disabled] {
@@ -469,14 +478,12 @@ function copySelectedIds() {
 }
 
 .selection-pill-action.is-danger {
-  border-color: rgba(239, 68, 68, 0.32);
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
+  background: #fca5a5;
+  color: #7f1d1d;
 }
 
 .selection-pill-action.is-danger:hover:not([disabled]) {
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.18);
+  background: #f87171;
 }
 
 .device-table {
@@ -492,15 +499,11 @@ function copySelectedIds() {
 }
 
 .device-table :deep(.n-data-table-tr.device-row:hover) {
-  box-shadow:
-    inset 1px 0 0 rgba(139, 92, 246, 0.2),
-    inset -1px 0 0 rgba(139, 92, 246, 0.2),
-    inset 0 1px 0 rgba(139, 92, 246, 0.18),
-    inset 0 -1px 0 rgba(139, 92, 246, 0.18);
+  box-shadow: inset 3px 0 0 0 var(--accent-bright);
 }
 
 .device-table :deep(.n-data-table-tr.device-row.is-selected) {
-  background: rgba(139, 92, 246, 0.13) !important;
+  background: color-mix(in srgb, var(--accent-bright) 16%, var(--surface)) !important;
 }
 
 .device-table :deep(.cell-index) {
@@ -522,12 +525,12 @@ function copySelectedIds() {
   height: 36px;
   flex: 0 0 36px;
   place-items: center;
-  border: 1px solid rgba(139, 92, 246, 0.28);
-  border-radius: 12px;
-  background: linear-gradient(145deg, rgba(139, 92, 246, 0.24), rgba(34, 211, 238, 0.08));
-  color: var(--accent-bright);
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: var(--accent-bright);
+  color: white;
   font-size: 13px;
-  font-weight: 760;
+  font-weight: 800;
   letter-spacing: -0.01em;
 }
 
@@ -569,12 +572,11 @@ function copySelectedIds() {
   height: 8px;
   border-radius: 50%;
   background: #94a3b8;
-  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.12);
+  border: 1.5px solid var(--surface-border);
 }
 
 .device-table :deep(.cell-id-dot.is-online) {
-  background: #34d399;
-  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14), 0 0 14px rgba(52, 211, 153, 0.6);
+  background: #22c55e;
 }
 
 .device-table :deep(.cell-id-text) {
@@ -622,12 +624,13 @@ function copySelectedIds() {
 .device-table :deep(.cell-version-pill) {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(34, 211, 238, 0.25);
+  border: 1.5px solid var(--surface-border);
   border-radius: 999px;
-  background: rgba(34, 211, 238, 0.08);
+  background: var(--surface-muted);
   color: var(--accent-cyan);
   font-family: 'SFMono-Regular', Consolas, monospace;
   font-size: 10px;
+  font-weight: 700;
   padding: 4px 8px;
 }
 
@@ -658,11 +661,11 @@ function copySelectedIds() {
   height: 8px;
   border-radius: 50%;
   background: #94a3b8;
+  border: 1.5px solid var(--surface-border);
 }
 
 .device-table :deep(.cell-status.is-online .cell-status-dot) {
-  background: #34d399;
-  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.16), 0 0 14px rgba(52, 211, 153, 0.7);
+  background: #22c55e;
 }
 
 .device-table :deep(.cell-status.is-online .cell-status-label) {

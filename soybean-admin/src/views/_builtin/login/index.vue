@@ -27,7 +27,6 @@ const moduleMap: Record<UnionKey.LoginModule, LoginModule> = {
 };
 
 const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
-
 </script>
 
 <template>
@@ -79,7 +78,7 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
           <span class="brand-mark"><SvgIcon icon="solar:monitor-smartphone-bold-duotone" /></span>
           <strong>West454</strong>
         </div>
-        <span class="eyebrow">Welcome home</span>
+        <span class="eyebrow login-card-eyebrow">Welcome home</span>
         <h2>{{ $t(activeModule.label) }}</h2>
         <p class="login-subtitle">Use your private console credentials to continue.</p>
         <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
@@ -101,20 +100,15 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   min-height: 100%;
   grid-template-columns: minmax(420px, 1.08fr) minmax(440px, 0.92fr);
   overflow: hidden;
-  background:
-    radial-gradient(circle at 18% 14%, rgba(124, 58, 237, 0.22), transparent 30rem),
-    radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.12), transparent 28rem),
-    #040711;
+  background: #0a0a0a;
 }
 
 .login-grid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask-image: radial-gradient(circle at 35% 45%, black, transparent 68%);
+  background-image: radial-gradient(rgba(245, 245, 240, 0.16) 1.5px, transparent 1.5px);
+  background-position: -12px -12px;
+  background-size: 28px 28px;
   pointer-events: none;
 }
 
@@ -129,7 +123,7 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   min-height: 100vh;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid rgba(148, 163, 184, 0.1);
+  border-right: 3px solid #f2f1ec;
   padding: 42px clamp(38px, 6vw, 92px);
 }
 
@@ -144,10 +138,10 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid rgba(196, 181, 253, 0.34);
-  border-radius: 13px;
-  background: linear-gradient(145deg, #8b5cf6, #4f46e5 58%, #0891b2);
-  box-shadow: 0 12px 34px rgba(124, 58, 237, 0.38);
+  border: 2px solid #f2f1ec;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  box-shadow: 3px 3px 0 0 #f2f1ec;
   color: white;
   font-size: 24px;
 }
@@ -160,12 +154,12 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
 .login-brand strong {
   color: white;
   font-size: 16px;
-  font-weight: 760;
+  font-weight: 800;
 }
 
 .login-brand small {
   margin-top: 4px;
-  color: #64748b;
+  color: #a1a1aa;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -178,24 +172,22 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
 
 .story-copy h1 {
   margin: 24px 0 18px;
-  color: #f8fafc;
+  color: #f5f5f0;
   font-size: clamp(46px, 6vw, 76px);
-  font-weight: 780;
-  letter-spacing: -0.065em;
+  font-weight: 800;
+  letter-spacing: -0.055em;
   line-height: 0.98;
 }
 
 .story-copy h1 span {
   display: block;
-  background: linear-gradient(95deg, #c4b5fd, #8b5cf6 48%, #67e8f9);
-  background-clip: text;
-  color: transparent;
+  color: #c4b5fd;
 }
 
 .story-copy > p {
   max-width: 570px;
   margin: 0;
-  color: #94a3b8;
+  color: #a1a1aa;
   font-size: 16px;
   line-height: 1.75;
 }
@@ -211,17 +203,17 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 2px solid #f2f1ec;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.58);
-  color: #cbd5e1;
+  background: #17171b;
+  color: #e4e4e7;
   font-size: 11px;
-  font-weight: 620;
+  font-weight: 700;
   padding: 9px 12px;
 }
 
 .story-points :deep(svg) {
-  color: #a78bfa;
+  color: #c4b5fd;
   font-size: 16px;
 }
 
@@ -229,7 +221,7 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #64748b;
+  color: #a1a1aa;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -238,10 +230,9 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
 
 .signal-line {
   width: 44px;
-  height: 2px;
+  height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8b5cf6, #22d3ee);
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.5);
+  background: #22c55e;
 }
 
 .login-panel {
@@ -261,28 +252,35 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
 
 .login-card {
   width: min(100%, 470px);
-  border-color: rgba(139, 92, 246, 0.24) !important;
-  background:
-    radial-gradient(circle at 100% 0, rgba(139, 92, 246, 0.13), transparent 22rem),
-    rgba(11, 15, 28, 0.78) !important;
-  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.44) !important;
+  border: 3px solid #f2f1ec !important;
+  background: #101013 !important;
+  box-shadow: 6px 6px 0 0 #f2f1ec !important;
+  --surface-border: #f2f1ec;
+  --surface: #101013;
+  --text-strong: #f5f5f0;
+  --text-muted: #a1a1aa;
 }
 
 .login-card :deep(.n-card__content) {
   padding: 38px !important;
 }
 
+.login-card-eyebrow {
+  background: var(--accent) !important;
+  border-color: #f2f1ec !important;
+}
+
 .login-card h2 {
   margin: 18px 0 8px;
-  color: var(--text-strong);
+  color: #f5f5f0;
   font-size: 31px;
-  font-weight: 760;
-  letter-spacing: -0.045em;
+  font-weight: 800;
+  letter-spacing: -0.035em;
 }
 
 .login-subtitle {
   margin: 0 0 28px;
-  color: var(--text-muted);
+  color: #a1a1aa;
   line-height: 1.6;
 }
 
@@ -292,9 +290,9 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   justify-content: center;
   gap: 7px;
   margin-top: 24px;
-  color: var(--text-muted);
+  color: #a1a1aa;
   font-size: 10px;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: 0.04em;
 }
 

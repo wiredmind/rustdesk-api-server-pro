@@ -1,26 +1,28 @@
 import { request } from '../request';
 
 /**
- * Login
+ * Login step 1: verify username + password.
  *
- * @param userName User name
- * @param password Password
+ * Never returns a session token directly - the backend always responds with
+ * a short-lived TOTP challenge (either "enroll" for first-time setup or
+ * "verify" for an already-enrolled admin). Call {@link fetchLoginVerify}
+ * with the returned challenge and an authenticator code to complete login.
  */
 export function fetchLogin(model: Api.Form.LoginForm) {
-  return request<Api.Auth.LoginToken>({
+  return request<Api.Auth.LoginChallenge>({
     url: '/auth/login',
     method: 'post',
-    data: {
-      username: model.username,
-      password: model.password,
-      code: model.code,
-      captchaId: model.captchaId
-    }
+    data: model
   });
 }
 
-export function fetchCaptcha() {
-  return request<Api.Auth.Captcha>({ url: '/auth/captcha' });
+/** Login step 2: complete a TOTP challenge and receive a session token. */
+export function fetchLoginVerify(params: { challenge: string; code: string }) {
+  return request<Api.Auth.LoginToken>({
+    url: '/auth/login/verify',
+    method: 'post',
+    data: params
+  });
 }
 
 /** Get user info */

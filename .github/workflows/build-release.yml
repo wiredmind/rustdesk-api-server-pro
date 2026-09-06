@@ -40,7 +40,6 @@ jobs:
       E2E_ADMIN_PASS: admin123456
       E2E_BACKEND_URL: http://127.0.0.1:12345
       E2E_BASE_URL: http://127.0.0.1:9527
-      E2E_SKIP_CAPTCHA: true
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -71,7 +70,7 @@ jobs:
       - name: start backend
         run: |
           cd backend
-          E2E_SKIP_CAPTCHA=true nohup go run . start > ../backend-e2e.log 2>&1 &
+          nohup go run . start > ../backend-e2e.log 2>&1 &
 
       - name: run playwright e2e
         run: |

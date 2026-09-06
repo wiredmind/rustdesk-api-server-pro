@@ -169,26 +169,24 @@ async function handleDelete() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(139, 92, 246, 0.32);
-  border-radius: 10px;
-  background:
-    linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.1));
-  color: var(--accent-bright);
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: var(--accent-bright);
+  color: #ffffff;
   font-size: 11px;
-  font-weight: 760;
+  font-weight: 800;
   letter-spacing: 0.05em;
   white-space: nowrap;
   padding: 7px 11px;
+  box-shadow: var(--shadow-hard-sm);
   transition:
-    border-color 200ms ease,
-    transform 200ms ease,
-    box-shadow 200ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .connect-button:hover {
-  border-color: var(--accent-bright);
-  box-shadow: 0 10px 26px rgba(139, 92, 246, 0.34);
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--shadow-color);
 }
 
 .connect-button :deep(svg) {
@@ -205,10 +203,9 @@ async function handleDelete() {
   width: 340px;
   padding: 22px;
   background: var(--surface-strong);
-  backdrop-filter: blur(24px);
-  border: 1px solid var(--surface-border-strong);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45), 0 2px 10px rgba(2, 6, 23, 0.28);
+  border: 3px solid var(--surface-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard-lg);
 }
 
 .connect-popover-head {
@@ -250,17 +247,16 @@ async function handleDelete() {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--surface-border);
-  border-radius: 12px;
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--text-strong);
   font: inherit;
   text-align: left;
   padding: 10px 12px;
   transition:
-    border-color 200ms ease,
-    transform 200ms ease,
-    background-color 200ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .connect-card-wide {
@@ -268,9 +264,8 @@ async function handleDelete() {
 }
 
 .connect-card:hover {
-  border-color: var(--surface-border-strong);
-  background: rgba(139, 92, 246, 0.1);
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .connect-card :deep(svg) {
@@ -325,22 +320,22 @@ async function handleDelete() {
   gap: 8px;
   width: 100%;
   margin-top: 12px;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
-  background: rgba(239, 68, 68, 0.08);
-  color: #f87171;
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: #fca5a5;
+  color: #7f1d1d;
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 800;
   letter-spacing: 0.02em;
   padding: 10px 12px;
   transition:
-    border-color 200ms ease,
-    background-color 200ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .connect-delete:hover {
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.16);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .connect-delete :deep(svg) {

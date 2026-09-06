@@ -45,9 +45,10 @@ const menuWrapperClass = computed(() => (showLogo.value ? 'flex-1-hidden' : 'h-f
   align-items: center;
   gap: 11px;
   margin: 10px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.13), rgba(34, 211, 238, 0.05));
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  box-shadow: var(--shadow-hard-sm);
   padding: 12px;
 }
 
@@ -57,9 +58,10 @@ const menuWrapperClass = computed(() => (showLogo.value ? 'flex-1-hidden' : 'h-f
   height: 34px;
   flex: 0 0 34px;
   place-items: center;
-  border-radius: 10px;
-  background: rgba(139, 92, 246, 0.18);
-  color: var(--accent-bright);
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: var(--accent-bright);
+  color: white;
   font-size: 20px;
 }
 

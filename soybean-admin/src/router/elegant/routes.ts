@@ -80,7 +80,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'devices',
       i18nKey: 'route.devices',
       icon: 'mdi:desktop-classic',
-      order: 5
+      order: 0
     }
   },
   {

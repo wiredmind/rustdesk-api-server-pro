@@ -34,8 +34,6 @@ declare namespace Api {
     interface LoginForm {
       username: string;
       password: string;
-      code: string;
-      captchaId: string;
     }
   }
 
@@ -45,13 +43,17 @@ declare namespace Api {
    * backend api module: "auth"
    */
   namespace Auth {
-    interface LoginToken {
-      token: string;
+    interface LoginChallenge {
+      stage: 'enroll' | 'verify';
+      challenge: string;
+      /** only present when stage is "enroll" */
+      secret?: string;
+      /** only present when stage is "enroll" */
+      otpauth_url?: string;
     }
 
-    interface Captcha {
-      id: string;
-      img: string;
+    interface LoginToken {
+      token: string;
     }
 
     interface UserInfo {

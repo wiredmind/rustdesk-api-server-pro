@@ -416,6 +416,15 @@ declare namespace App {
           pwdLogin: {
             title: string;
             rememberMe: string;
+            mfaEnrollTitle: string;
+            mfaEnrollHint: string;
+            mfaVerifyTitle: string;
+            mfaVerifyHint: string;
+            mfaSecretLabel: string;
+            mfaCopySecret: string;
+            mfaCopied: string;
+            mfaCodePlaceholder: string;
+            mfaBack: string;
           };
         };
         home: {

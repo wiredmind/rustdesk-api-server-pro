@@ -40,10 +40,10 @@ withDefaults(defineProps<Props>(), {
   height: 38px;
   flex: 0 0 38px;
   place-items: center;
-  border: 1px solid rgba(196, 181, 253, 0.3);
-  border-radius: 12px;
-  background: linear-gradient(145deg, #8b5cf6, #4f46e5 58%, #0891b2);
-  box-shadow: 0 10px 28px rgba(124, 58, 237, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  box-shadow: var(--shadow-hard-sm);
   color: white;
 }
 
@@ -59,12 +59,10 @@ withDefaults(defineProps<Props>(), {
 }
 
 .brand-copy strong {
-  background: linear-gradient(90deg, var(--text-strong), var(--accent-bright));
-  background-clip: text;
-  color: transparent;
+  color: var(--text-strong);
   font-size: 15px;
-  font-weight: 760;
-  letter-spacing: -0.025em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .brand-copy small {

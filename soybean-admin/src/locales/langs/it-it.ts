@@ -183,7 +183,16 @@ const local: App.I18n.Schema = {
       },
       pwdLogin: {
         title: 'Accesso con password',
-        rememberMe: 'Ricordami'
+        rememberMe: 'Ricordami',
+        mfaEnrollTitle: 'Set up your authenticator app',
+        mfaEnrollHint: 'Scan this QR code with Google Authenticator, 1Password, or any TOTP app, then enter the 6-digit code to confirm.',
+        mfaVerifyTitle: 'Two-factor authentication',
+        mfaVerifyHint: 'Enter the 6-digit code from your authenticator app.',
+        mfaSecretLabel: 'Or enter this key manually:',
+        mfaCopySecret: 'Copy key',
+        mfaCopied: 'Copied to clipboard',
+        mfaCodePlaceholder: 'Please enter your 6-digit code',
+        mfaBack: 'Back to password'
       }
     },
     devices: {

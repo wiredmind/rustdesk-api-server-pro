@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { useLoading } from '@sa/hooks';
 import { SetupStoreId } from '@/enum';
 import { useRouterPush } from '@/hooks/common/router';
-import { fetchGetUserInfo, fetchLogin } from '@/service/api';
+import { fetchGetUserInfo, fetchLogin, fetchLoginVerify } from '@/service/api';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
 import { useRouteStore } from '../route';
@@ -54,16 +54,27 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   }
 
   /**
-   * Login
+   * Login step 1: verify username + password and receive a TOTP challenge.
    *
-   * @param userName User name
-   * @param password Password
+   * @param model Username and password
+   */
+  async function requestLoginChallenge(model: Api.Form.LoginForm) {
+    startLoading();
+    const { data, error } = await fetchLogin(model);
+    endLoading();
+    return { data, error };
+  }
+
+  /**
+   * Login step 2: complete the TOTP challenge and establish the session.
+   *
+   * @param params Challenge id and authenticator code
    * @param [redirect=true] Whether to redirect after login. Default is `true`
    */
-  async function login(model: Api.Form.LoginForm, redirect = true) {
+  async function completeLogin(params: { challenge: string; code: string }, redirect = true) {
     startLoading();
 
-    const { data: loginToken, error } = await fetchLogin(model);
+    const { data: loginToken, error } = await fetchLoginVerify(params);
 
     if (!error) {
       const pass = await loginByToken(loginToken);
@@ -139,7 +150,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     isLogin,
     loginLoading,
     resetStore,
-    login,
+    requestLoginChallenge,
+    completeLogin,
     initUserInfo
   };
 });

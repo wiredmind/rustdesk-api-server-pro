@@ -3,9 +3,10 @@ package model
 import "time"
 
 const (
-	VC_TYPE_MAIL = 1
-	VC_TYPE_SMS  = 2
-	VC_TYPE_2FA  = 3
+	VC_TYPE_MAIL      = 1
+	VC_TYPE_SMS       = 2
+	VC_TYPE_2FA       = 3
+	VC_TYPE_ADMIN_TFA = 4
 
 	VC_STATUS_UNUSED  = 1
 	VC_STATUS_USED    = 2

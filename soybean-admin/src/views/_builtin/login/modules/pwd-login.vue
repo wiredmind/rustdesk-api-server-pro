@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
+import QRCode from 'qrcode';
+import { useMessage } from 'naive-ui';
 import { $t } from '@/locales';
 import { useNaiveForm } from '@/hooks/common/form';
 import { useAuthStore } from '@/store/modules/auth';
-import { fetchCaptcha } from '@/service/api/auth';
 
 defineOptions({
   name: 'PwdLogin'
 });
 
 const authStore = useAuthStore();
+const message = useMessage();
 const { formRef, validate } = useNaiveForm();
+
+type Stage = 'password' | 'enroll' | 'verify';
+
+const stage = ref<Stage>('password');
+const challenge = ref('');
+const qrDataUrl = ref('');
+const enrollSecret = ref('');
+const mfaCode = ref('');
 
 const model: Api.Form.LoginForm = reactive({
   username: '',
-  password: '',
-  code: '',
-  captchaId: ''
-});
-
-const captcha: Api.Auth.Captcha = reactive({
-  id: '',
-  img: ''
+  password: ''
 });
 
 const rules = computed<Record<keyof Api.Form.LoginForm, App.Global.FormRule[]>>(() => {
@@ -37,43 +40,54 @@ const rules = computed<Record<keyof Api.Form.LoginForm, App.Global.FormRule[]>>(
         required: true,
         message: 'Password is required'
       }
-    ],
-    code: [
-      {
-        required: true,
-        message: 'Verification code is required'
-      }
-    ],
-    captchaId: [
-      {
-        required: true,
-        message: 'Verification code is required'
-      }
     ]
   };
 });
 
 async function handleSubmit() {
   await validate();
-  const err = await authStore.login(model);
-  if (err?.response?.data.message === 'CaptchaError') {
-    handleCaptcha();
+  const { data, error } = await authStore.requestLoginChallenge(model);
+  if (error || !data) {
+    return;
+  }
+
+  challenge.value = data.challenge;
+
+  if (data.stage === 'enroll' && data.secret && data.otpauth_url) {
+    enrollSecret.value = data.secret;
+    qrDataUrl.value = await QRCode.toDataURL(data.otpauth_url, { width: 220, margin: 1 });
+    stage.value = 'enroll';
+  } else {
+    stage.value = 'verify';
   }
 }
 
-async function handleCaptcha() {
-  const c = await fetchCaptcha();
-  captcha.id = c.data?.id || '';
-  captcha.img = c.data?.img || '';
-  model.captchaId = captcha.id || '';
+async function handleVerify() {
+  if (!mfaCode.value.trim()) {
+    return;
+  }
+  await authStore.completeLogin({ challenge: challenge.value, code: mfaCode.value.trim() });
 }
-onMounted(() => {
-  handleCaptcha();
-});
+
+function backToPassword() {
+  stage.value = 'password';
+  mfaCode.value = '';
+  challenge.value = '';
+  qrDataUrl.value = '';
+  enrollSecret.value = '';
+}
+
+function copySecret() {
+  if (navigator?.clipboard?.writeText) {
+    void navigator.clipboard.writeText(enrollSecret.value).then(() => {
+      message.success($t('page.login.pwdLogin.mfaCopied'));
+    });
+  }
+}
 </script>
 
 <template>
-  <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false" class="auth-form">
+  <NForm v-if="stage === 'password'" ref="formRef" :model="model" :rules="rules" size="large" :show-label="false" class="auth-form">
     <NFormItem path="username">
       <NInput v-model:value="model.username" :placeholder="$t('page.login.common.userNamePlaceholder')">
         <template #prefix><SvgIcon icon="solar:user-rounded-linear" /></template>
@@ -85,19 +99,10 @@ onMounted(() => {
         type="password"
         show-password-on="click"
         :placeholder="$t('page.login.common.passwordPlaceholder')"
+        @keyup.enter="handleSubmit"
       >
         <template #prefix><SvgIcon icon="solar:lock-keyhole-minimalistic-linear" /></template>
       </NInput>
-    </NFormItem>
-    <NFormItem path="code">
-      <div class="captcha-row">
-        <NInput v-model:value="model.code" clearable :placeholder="$t('page.login.common.codePlaceholder')">
-          <template #prefix><SvgIcon icon="solar:shield-keyhole-linear" /></template>
-        </NInput>
-        <button class="captcha-frame" type="button" title="Refresh verification code" @click="handleCaptcha">
-          <img width="152" height="40" :src="captcha.img" alt="Verification code" />
-        </button>
-      </div>
     </NFormItem>
     <div class="form-meta">
       <NCheckbox>{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
@@ -118,6 +123,52 @@ onMounted(() => {
       </span>
     </NButton>
   </NForm>
+
+  <div v-else-if="stage === 'enroll'" class="mfa-panel">
+    <h3>{{ $t('page.login.pwdLogin.mfaEnrollTitle') }}</h3>
+    <p>{{ $t('page.login.pwdLogin.mfaEnrollHint') }}</p>
+    <img v-if="qrDataUrl" :src="qrDataUrl" width="220" height="220" class="mfa-qr" alt="TOTP QR code" />
+    <div class="mfa-secret">
+      <span>{{ $t('page.login.pwdLogin.mfaSecretLabel') }}</span>
+      <button type="button" class="mfa-secret-value" @click="copySecret">
+        <code>{{ enrollSecret }}</code>
+        <SvgIcon icon="solar:copy-linear" />
+      </button>
+    </div>
+    <NInput
+      v-model:value="mfaCode"
+      size="large"
+      class="mfa-code-input"
+      :placeholder="$t('page.login.pwdLogin.mfaCodePlaceholder')"
+      @keyup.enter="handleVerify"
+    />
+    <NButton type="primary" size="large" block :loading="authStore.loginLoading" class="submit-button" @click="handleVerify">
+      {{ $t('common.confirm') }}
+    </NButton>
+    <button type="button" class="mfa-back" @click="backToPassword">{{ $t('page.login.pwdLogin.mfaBack') }}</button>
+  </div>
+
+  <div v-else class="mfa-panel">
+    <h3>{{ $t('page.login.pwdLogin.mfaVerifyTitle') }}</h3>
+    <p>{{ $t('page.login.pwdLogin.mfaVerifyHint') }}</p>
+    <NInput
+      v-model:value="mfaCode"
+      size="large"
+      class="mfa-code-input"
+      :placeholder="$t('page.login.pwdLogin.mfaCodePlaceholder')"
+      autofocus
+      @keyup.enter="handleVerify"
+    >
+      <template #prefix><SvgIcon icon="solar:shield-keyhole-linear" /></template>
+    </NInput>
+    <NButton type="primary" size="large" block :loading="authStore.loginLoading" class="submit-button" @click="handleVerify">
+      <span class="inline-flex items-center gap-8px">
+        {{ $t('common.confirm') }}
+        <SvgIcon icon="solar:arrow-right-linear" />
+      </span>
+    </NButton>
+    <button type="button" class="mfa-back" @click="backToPassword">{{ $t('page.login.pwdLogin.mfaBack') }}</button>
+  </div>
 </template>
 
 <style scoped>
@@ -127,45 +178,13 @@ onMounted(() => {
 
 .auth-form :deep(.n-input) {
   min-height: 48px;
-  border: 1px solid var(--surface-border);
-  background: rgba(15, 23, 42, 0.58) !important;
+  background: var(--surface) !important;
 }
 
 .auth-form :deep(.n-input__prefix) {
   margin-right: 8px;
   color: var(--accent-bright);
   font-size: 18px;
-}
-
-.captcha-row {
-  display: grid;
-  width: 100%;
-  grid-template-columns: minmax(0, 1fr) 134px;
-  gap: 10px;
-}
-
-.captcha-frame {
-  height: 48px;
-  overflow: hidden;
-  border: 1px solid var(--surface-border);
-  border-radius: 11px;
-  background: #f8fafc;
-  cursor: pointer;
-  padding: 3px;
-  transition:
-    border-color 160ms ease,
-    transform 160ms ease;
-}
-
-.captcha-frame:hover {
-  border-color: var(--surface-border-strong);
-  transform: translateY(-1px);
-}
-
-.captcha-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .form-meta {
@@ -189,13 +208,88 @@ onMounted(() => {
   letter-spacing: 0.015em;
 }
 
-@media (max-width: 420px) {
-  .captcha-row {
-    grid-template-columns: 1fr;
-  }
+.mfa-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
 
-  .captcha-frame {
-    width: 100%;
-  }
+.mfa-panel h3 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 18px;
+  font-weight: 760;
+}
+
+.mfa-panel p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.mfa-qr {
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 10px;
+}
+
+.mfa-secret {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.mfa-secret > span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mfa-secret-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 2px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-strong);
+  padding: 10px 12px;
+}
+
+.mfa-secret-value code {
+  overflow: hidden;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mfa-code-input {
+  width: 100%;
+}
+
+.mfa-code-input :deep(.n-input) {
+  min-height: 48px;
+  background: var(--surface) !important;
+  text-align: center;
+  letter-spacing: 0.3em;
+}
+
+.mfa-back {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 </style>
