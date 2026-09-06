@@ -151,6 +151,7 @@ function copyId() {
   font-size: 11px;
   font-weight: 760;
   letter-spacing: 0.05em;
+  white-space: nowrap;
   padding: 7px 11px;
   transition:
     border-color 200ms ease,
@@ -174,8 +175,14 @@ function copyId() {
 }
 
 .connect-popover {
+  position: relative;
   width: 340px;
   padding: 22px;
+  background: var(--surface-strong);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--surface-border-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45), 0 2px 10px rgba(2, 6, 23, 0.28);
 }
 
 .connect-popover-head {

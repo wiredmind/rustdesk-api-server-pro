@@ -7,7 +7,7 @@ import { $t } from '@/locales';
 import { useAppStore } from '@/store/modules/app';
 import { useTable } from '@/hooks/common/table';
 import TableHeader from './components/table-header.vue';
-import AuditBaseLogsSearch from './components/search.vue';
+import DevicesSearch from './components/search.vue';
 import ConnectMenu from './components/connect-menu.vue';
 
 type DeviceRow = Api.Devices.Device & { index: number };
@@ -34,6 +34,7 @@ const {
   getDataByPage,
   loading,
   mobilePagination,
+  reloadColumns,
   searchParams,
   resetSearchParams
 } = useTable({
@@ -187,7 +188,7 @@ const {
     {
       key: 'operate',
       title: $t('common.operate'),
-      width: 132,
+      width: 170,
       fixed: 'right',
       align: 'center',
       render: (row: DeviceRow) =>
@@ -216,6 +217,11 @@ watch(sort, () => {
   const field = String(sort.value.columnKey ?? '');
   searchParams.sort_by = sortableKeys.has(field) ? field : 'is_online';
   searchParams.sort_order = sort.value.order === 'ascend' ? 'asc' : 'desc';
+  // The columns array is only re-evaluated by the table hook when
+  // reloadColumns() runs; without this, each column's sortOrder stays
+  // frozen at whatever it was on first render, so naive-ui's header sort
+  // indicators never move and repeated clicks appear to do nothing.
+  reloadColumns();
   void getData();
 });
 
@@ -254,49 +260,11 @@ function copySelectedIds() {
   message.info(selectedRustdeskIds.value.join('\n'));
 }
 
-const totals = computed(() => ({
-  online: data.value.filter(row => row.is_online).length,
-  versioned: data.value.filter(row => row.version).length
-}));
 </script>
 
 <template>
   <div class="aceternity-page devices-page">
-    <header class="fleet-heading">
-      <div>
-        <span class="eyebrow">
-          <span class="status-dot" />
-          Private fleet
-        </span>
-        <h1>Every computer. One calm view.</h1>
-        <p>Inspect, search, sort and connect to every computer on your private RustDesk network.</p>
-      </div>
-      <div class="fleet-summary">
-        <div class="summary-card summary-online">
-          <SvgIcon icon="solar:bolt-circle-bold-duotone" />
-          <div>
-            <strong>{{ totals.online }}</strong>
-            <small>Online now</small>
-          </div>
-        </div>
-        <div class="summary-card summary-total">
-          <SvgIcon icon="solar:monitor-smartphone-bold-duotone" />
-          <div>
-            <strong>{{ data.length }}</strong>
-            <small>In view</small>
-          </div>
-        </div>
-        <div class="summary-card summary-versioned">
-          <SvgIcon icon="solar:settings-bold-duotone" />
-          <div>
-            <strong>{{ totals.versioned }}</strong>
-            <small>Reporting</small>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <AuditBaseLogsSearch v-model:model="searchParams" @reset="resetSearchParams" @search="getDataByPage" />
+    <DevicesSearch v-model:model="searchParams" @reset="resetSearchParams" @search="getDataByPage" />
 
     <section class="device-table-card spotlight-card">
       <div class="table-toolbar">
@@ -326,7 +294,7 @@ const totals = computed(() => ({
         :columns="columns"
         :data="data"
         :flex-height="!appStore.isMobile"
-        :scroll-x="1480"
+        :scroll-x="1520"
         :loading="loading"
         remote
         :row-key="row => row.id"
@@ -347,82 +315,6 @@ const totals = computed(() => ({
   flex-direction: column;
   gap: 20px;
   padding-bottom: 12px;
-}
-
-.fleet-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 6px 4px 0;
-}
-
-.fleet-heading h1 {
-  margin: 18px 0 8px;
-  color: var(--text-strong);
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 770;
-  letter-spacing: -0.045em;
-  line-height: 1.05;
-}
-
-.fleet-heading p {
-  margin: 0;
-  max-width: 560px;
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.fleet-summary {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(120px, 1fr));
-  gap: 12px;
-  width: 360px;
-  flex: 0 0 auto;
-}
-
-.summary-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--surface-border);
-  border-radius: 14px;
-  background: var(--surface);
-  padding: 12px 14px;
-}
-
-.summary-card :deep(svg) {
-  font-size: 22px;
-  color: var(--accent-bright);
-}
-
-.summary-card strong,
-.summary-card small {
-  display: block;
-}
-
-.summary-card strong {
-  color: var(--text-strong);
-  font-size: 19px;
-  line-height: 1;
-}
-
-.summary-card small {
-  margin-top: 4px;
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.summary-card.summary-online :deep(svg) {
-  color: #34d399;
-}
-
-.summary-card.summary-versioned :deep(svg) {
-  color: var(--accent-cyan);
 }
 
 .device-table-card {
@@ -730,23 +622,7 @@ const totals = computed(() => ({
   color: var(--text-muted);
 }
 
-@media (max-width: 1200px) {
-  .fleet-summary {
-    width: auto;
-  }
-}
-
 @media (max-width: 880px) {
-  .fleet-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .fleet-summary {
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-  }
-
   .device-table-card {
     padding: 14px;
   }

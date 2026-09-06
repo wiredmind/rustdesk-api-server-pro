@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-import { useNaiveForm } from '@/hooks/common/form';
+import { ref } from 'vue';
 
 defineOptions({
-  name: 'AuditBaseLogsSearch'
+  name: 'DevicesSearch'
 });
 
 interface Emits {
@@ -13,143 +12,169 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const { formRef } = useNaiveForm();
 const model = defineModel<Record<string, any>>('model', { required: true });
 
-async function reset() {
+const advancedOpen = ref(false);
+
+function reset() {
   emit('reset');
 }
 
-async function search() {
+function search() {
   emit('search');
 }
 </script>
 
 <template>
-  <section class="search-panel spotlight-card">
-    <div class="search-intro">
-      <span class="search-icon"><SvgIcon icon="solar:magnifer-linear" /></span>
-      <div>
-        <strong>Find a computer</strong>
-        <span>Sort, search and filter your private fleet</span>
+  <section class="search-bar spotlight-card">
+    <NInput
+      v-model:value="model.keyword"
+      class="search-keyword"
+      clearable
+      placeholder="Search hostname, operator, RustDesk ID, OS, last user"
+      @keyup.enter="search"
+    >
+      <template #prefix>
+        <SvgIcon icon="solar:magnifer-linear" class="text-icon" />
+      </template>
+    </NInput>
+    <NSelect
+      v-model:value="model.online"
+      class="search-status"
+      clearable
+      placeholder="Status"
+      :options="[
+        { label: 'Online', value: 'online' },
+        { label: 'Offline', value: 'offline' }
+      ]"
+    />
+    <NInput v-model:value="model.os" class="search-os" clearable placeholder="OS" @keyup.enter="search" />
+    <NInput v-model:value="model.version" class="search-version" clearable placeholder="Version" @keyup.enter="search" />
+    <NButton size="medium" @click="search">
+      <template #icon><icon-ic-round-search class="text-icon" /></template>
+      Search
+    </NButton>
+    <NButton size="medium" quaternary @click="reset">
+      <template #icon><icon-ic-round-refresh class="text-icon" /></template>
+      Reset
+    </NButton>
+    <NPopover trigger="click" placement="bottom-end" :show-arrow="false" raw>
+      <template #trigger>
+        <button type="button" class="advanced-toggle" :class="{ 'is-active': advancedOpen }" @click="advancedOpen = !advancedOpen">
+          <SvgIcon icon="solar:tuning-2-linear" />
+          More filters
+        </button>
+      </template>
+      <div class="advanced-panel">
+        <NFormItem label="Computer name" label-placement="top">
+          <NInput v-model:value="model.hostname" clearable placeholder="fdl-badrib" @keyup.enter="search" />
+        </NFormItem>
+        <NFormItem label="RustDesk ID" label-placement="top">
+          <NInput v-model:value="model.rustdesk_id" clearable placeholder="000 000 000" @keyup.enter="search" />
+        </NFormItem>
+        <NFormItem label="Current operator" label-placement="top">
+          <NInput v-model:value="model.username" clearable placeholder="Current operator" @keyup.enter="search" />
+        </NFormItem>
+        <NFormItem label="Last signed-in user" label-placement="top">
+          <NInput v-model:value="model.last_user" clearable placeholder="Most recent user" @keyup.enter="search" />
+        </NFormItem>
+        <NButton type="primary" block @click="search">Apply filters</NButton>
       </div>
-    </div>
-    <NForm ref="formRef" :model="model" label-placement="top">
-      <NGrid :x-gap="12" :y-gap="10" responsive="screen" item-responsive>
-        <NFormItemGi span="24 s:12 l:6" label="Quick search" path="keyword">
-          <NInput v-model:value="model.keyword" clearable placeholder="Search hostname, operator, ID, OS, last user" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="Status" path="online">
-          <NSelect
-            v-model:value="model.online"
-            :options="[
-              { label: 'Online', value: 'online' },
-              { label: 'Offline', value: 'offline' }
-            ]"
-            clearable
-            placeholder="Any"
-          />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="Operating system" path="os">
-          <NInput v-model:value="model.os" clearable placeholder="Windows 11 Pro, Ubuntu 24.04, macOS 15" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="RustDesk version" path="version">
-          <NInput v-model:value="model.version" clearable placeholder="1.4.6" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="Operator" path="username">
-          <NInput v-model:value="model.username" clearable placeholder="Current operator" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="Last signed-in user" path="last_user">
-          <NInput v-model:value="model.last_user" clearable placeholder="Most recent user" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="Computer name" path="hostname">
-          <NInput v-model:value="model.hostname" clearable placeholder="fdl-badrib" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" label="RustDesk ID" path="rustdesk_id">
-          <NInput v-model:value="model.rustdesk_id" clearable placeholder="000 000 000" />
-        </NFormItemGi>
-        <NFormItemGi span="24 s:12 l:6" class="action-field">
-          <NSpace class="w-full" justify="end">
-            <NButton @click="reset">
-              <template #icon><icon-ic-round-refresh class="text-icon" /></template>
-              Reset
-            </NButton>
-            <NButton type="primary" @click="search">
-              <template #icon><icon-ic-round-search class="text-icon" /></template>
-              Search
-            </NButton>
-          </NSpace>
-        </NFormItemGi>
-      </NGrid>
-    </NForm>
+    </NPopover>
   </section>
 </template>
 
 <style scoped>
-.search-panel {
-  display: grid;
-  grid-template-columns: minmax(190px, 0.35fr) minmax(0, 1.65fr);
-  align-items: end;
-  gap: 22px;
-  padding: 18px 20px 8px;
-}
-
-.search-intro {
+.search-bar {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
 }
 
-.search-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
-  place-items: center;
-  border: 1px solid rgba(139, 92, 246, 0.24);
-  border-radius: 11px;
-  background: rgba(139, 92, 246, 0.12);
-  color: var(--accent-bright);
-  font-size: 20px;
+.search-keyword {
+  min-width: 260px;
+  flex: 2 1 260px;
 }
 
-.search-intro strong,
-.search-intro span {
-  display: block;
+.search-status {
+  min-width: 130px;
+  flex: 0 1 130px;
 }
 
-.search-intro strong {
+.search-os {
+  min-width: 140px;
+  flex: 0 1 140px;
+}
+
+.search-version {
+  min-width: 110px;
+  flex: 0 1 110px;
+}
+
+.advanced-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  background: var(--surface-muted);
   color: var(--text-strong);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
+  padding: 8px 12px;
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
 }
 
-.search-intro span {
-  margin-top: 4px;
+.advanced-toggle:hover,
+.advanced-toggle.is-active {
+  border-color: var(--surface-border-strong);
+  background: rgba(139, 92, 246, 0.14);
+  color: var(--accent-bright);
+}
+
+.advanced-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 280px;
+  background: var(--surface-strong);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--surface-border-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45), 0 2px 10px rgba(2, 6, 23, 0.28);
+  padding: 18px;
+}
+
+.advanced-panel :deep(.n-form-item) {
+  margin-bottom: 0;
+}
+
+.advanced-panel :deep(.n-form-item-label) {
   color: var(--text-muted);
   font-size: 10px;
-}
-
-.action-field {
-  align-items: end;
-}
-
-:deep(.n-form-item-label) {
-  color: var(--text-muted);
-  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-@media (max-width: 1024px) {
-  .search-panel {
-    grid-template-columns: 1fr;
+@media (max-width: 720px) {
+  .search-bar {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .search-intro {
-    padding-bottom: 0;
+  .search-keyword,
+  .search-status,
+  .search-os,
+  .search-version {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
   }
 }
 </style>
