@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue';
-import type { CSSProperties, PropType } from 'vue';
 import { NTag, NTooltip, useMessage } from 'naive-ui';
-import { fetchDevicesList } from '@/service/api/devices';
+import { deleteDevices, fetchDevicesList } from '@/service/api/devices';
 import { $t } from '@/locales';
 import { useAppStore } from '@/store/modules/app';
-import { useTable } from '@/hooks/common/table';
+import { useTable, useTableOperate } from '@/hooks/common/table';
 import TableHeader from './components/table-header.vue';
 import DevicesSearch from './components/search.vue';
 import ConnectMenu from './components/connect-menu.vue';
@@ -24,8 +23,6 @@ const message = useMessage();
 
 const sort = ref<SortState>({ columnKey: 'is_online', order: 'descend' });
 
-const selectedRustdeskIds = ref<string[]>([]);
-
 const {
   columns,
   columnChecks,
@@ -34,7 +31,6 @@ const {
   getDataByPage,
   loading,
   mobilePagination,
-  reloadColumns,
   searchParams,
   resetSearchParams
 } = useTable({
@@ -73,7 +69,10 @@ const {
     {
       key: 'hostname',
       title: $t('dataMap.device.hostname'),
-      minWidth: 240,
+      width: 260,
+      minWidth: 180,
+      maxWidth: 480,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'hostname' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -88,7 +87,10 @@ const {
     {
       key: 'rustdesk_id',
       title: $t('dataMap.device.rustdesk_id'),
-      minWidth: 168,
+      width: 180,
+      minWidth: 140,
+      maxWidth: 260,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'rustdesk_id' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -100,7 +102,10 @@ const {
     {
       key: 'username',
       title: $t('page.devices.table.columns.user' as App.I18n.I18nKey),
-      minWidth: 140,
+      width: 150,
+      minWidth: 110,
+      maxWidth: 240,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'username' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -109,7 +114,10 @@ const {
     {
       key: 'last_user',
       title: $t('page.devices.table.columns.lastUser' as App.I18n.I18nKey),
-      minWidth: 140,
+      width: 160,
+      minWidth: 110,
+      maxWidth: 240,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'last_user' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -118,7 +126,10 @@ const {
     {
       key: 'last_online',
       title: $t('page.devices.table.columns.lastOnline' as App.I18n.I18nKey),
-      minWidth: 168,
+      width: 190,
+      minWidth: 150,
+      maxWidth: 280,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'last_online' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -140,7 +151,10 @@ const {
     {
       key: 'version',
       title: $t('dataMap.device.version'),
-      minWidth: 132,
+      width: 150,
+      minWidth: 110,
+      maxWidth: 220,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'version' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -152,7 +166,10 @@ const {
     {
       key: 'os',
       title: $t('dataMap.device.os'),
-      minWidth: 132,
+      width: 150,
+      minWidth: 100,
+      maxWidth: 260,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'os' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -179,7 +196,10 @@ const {
     {
       key: 'created_at',
       title: $t('dataMap.audit.created_at'),
-      minWidth: 156,
+      width: 170,
+      minWidth: 140,
+      maxWidth: 240,
+      resizable: true,
       sorter: true,
       sortOrder: sort.value.columnKey === 'created_at' ? sort.value.order : false,
       render: (row: DeviceRow) =>
@@ -198,8 +218,10 @@ const {
           {
             trigger: () =>
               h(ConnectMenu, {
+                deviceId: row.id,
                 rustdeskId: row.rustdesk_id,
-                hostname: row.hostname
+                hostname: row.hostname,
+                onDeleted: () => void getData()
               }),
             default: () => $t('page.devices.table.actions.connect' as App.I18n.I18nKey)
           }
@@ -213,15 +235,34 @@ const sortableKeys = new Set([
   'username', 'last_user', 'version', 'os', 'memory', 'created_at'
 ]);
 
+const { checkedRowKeys, onBatchDeleted } = useTableOperate(data, getData);
+
+const selectedRustdeskIds = computed(() =>
+  checkedRowKeys.value
+    .map(key => data.value.find(item => String(item.id) === String(key))?.rustdesk_id)
+    .filter((id): id is string => Boolean(id))
+);
+
+async function handleBatchDelete() {
+  const res = await deleteDevices({ ids: checkedRowKeys.value.map(key => Number(key)) });
+  if (res.error === null) {
+    onBatchDeleted();
+  }
+}
+
 watch(sort, () => {
   const field = String(sort.value.columnKey ?? '');
   searchParams.sort_by = sortableKeys.has(field) ? field : 'is_online';
   searchParams.sort_order = sort.value.order === 'ascend' ? 'asc' : 'desc';
-  // The columns array is only re-evaluated by the table hook when
-  // reloadColumns() runs; without this, each column's sortOrder stays
-  // frozen at whatever it was on first render, so naive-ui's header sort
-  // indicators never move and repeated clicks appear to do nothing.
-  reloadColumns();
+  // Mutate the existing column objects in place instead of recreating the
+  // columns array: naive-ui treats a resizable column's width state as
+  // belonging to that exact object reference, so replacing the array would
+  // silently reset any user-resized widths every time the sort changes.
+  for (const col of columns.value) {
+    if ('key' in col && sortableKeys.has(String(col.key))) {
+      (col as Record<string, unknown>).sortOrder = col.key === sort.value.columnKey ? sort.value.order : false;
+    }
+  }
   void getData();
 });
 
@@ -235,15 +276,6 @@ function onSorterChange(state: SortState | null | undefined) {
     return;
   }
   sort.value = { columnKey: field, order: state.order || 'descend' };
-}
-
-function onRowSelectionChange(keys: ArrayLike<string | number | boolean>) {
-  const resolved: string[] = [];
-  for (const key of Array.from(keys)) {
-    const row = data.value.find(item => String(item.id) === String(key));
-    if (row?.rustdesk_id) resolved.push(row.rustdesk_id);
-  }
-  selectedRustdeskIds.value = resolved;
 }
 
 function copySelectedIds() {
@@ -273,9 +305,9 @@ function copySelectedIds() {
           <h2>{{ $t('route.devices') }}<span class="table-count">· {{ searchParams.size }} / page</span></h2>
         </div>
         <div class="table-toolbar-actions">
-          <div class="selection-pill" :class="{ 'is-active': selectedRustdeskIds.length > 0 }">
+          <div class="selection-pill" :class="{ 'is-active': checkedRowKeys.length > 0 }">
             <span class="status-dot" />
-            <strong>{{ selectedRustdeskIds.length || 0 }}</strong>
+            <strong>{{ checkedRowKeys.length || 0 }}</strong>
             <small>selected</small>
             <button
               type="button"
@@ -286,6 +318,15 @@ function copySelectedIds() {
               <SvgIcon icon="solar:copy-linear" />
               {{ $t('page.devices.table.bulk.copy' as App.I18n.I18nKey) }}
             </button>
+            <NPopconfirm :disabled="checkedRowKeys.length === 0" @positive-click="handleBatchDelete">
+              <template #trigger>
+                <button type="button" class="selection-pill-action is-danger" :disabled="checkedRowKeys.length === 0">
+                  <SvgIcon icon="solar:trash-bin-trash-linear" />
+                  {{ $t('common.batchDelete') }}
+                </button>
+              </template>
+              {{ $t('common.confirmDelete') }}
+            </NPopconfirm>
           </div>
           <TableHeader v-model:columns="columnChecks" :loading="loading" @refresh="getData" />
         </div>
@@ -301,7 +342,7 @@ function copySelectedIds() {
         :pagination="mobilePagination"
         :row-class-name="() => 'device-row'"
         @update:sorter="onSorterChange"
-        @update:checked-row-keys="onRowSelectionChange"
+        v-model:checked-row-keys="checkedRowKeys"
         class="device-table"
       />
     </section>
@@ -427,6 +468,17 @@ function copySelectedIds() {
   cursor: not-allowed;
 }
 
+.selection-pill-action.is-danger {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+.selection-pill-action.is-danger:hover:not([disabled]) {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.18);
+}
+
 .device-table {
   position: relative;
   z-index: 1;
@@ -503,7 +555,6 @@ function copySelectedIds() {
   letter-spacing: 0.04em;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
   overflow: hidden;
 }
 

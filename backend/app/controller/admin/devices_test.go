@@ -36,3 +36,17 @@ func TestBuildConnectURL(t *testing.T) {
 		}
 	}
 }
+
+// TestValidateDeviceIds guards against a malformed/empty delete request
+// resolving to an unscoped bulk delete.
+func TestValidateDeviceIds(t *testing.T) {
+	if err := validateDeviceIds(nil); err == nil {
+		t.Error("validateDeviceIds(nil) = nil, want error")
+	}
+	if err := validateDeviceIds([]int{}); err == nil {
+		t.Error("validateDeviceIds([]int{}) = nil, want error")
+	}
+	if err := validateDeviceIds([]int{1, 2, 3}); err != nil {
+		t.Errorf("validateDeviceIds([1,2,3]) = %v, want nil", err)
+	}
+}

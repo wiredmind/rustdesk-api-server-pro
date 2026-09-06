@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"errors"
 	"rustdesk-api-server-pro/app/model"
 	"rustdesk-api-server-pro/config"
 	"rustdesk-api-server-pro/db"
@@ -18,6 +19,7 @@ type DevicesController struct {
 func (c *DevicesController) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("GET", "/devices/list", "HandleList")
 	b.Handle("POST", "/devices/connect", "HandleConnect")
+	b.Handle("POST", "/devices/delete", "HandleDelete")
 }
 
 var deviceSortableColumns = map[string]bool{
@@ -197,4 +199,31 @@ func formatTime(t time.Time) string {
 		return ""
 	}
 	return t.Format(config.TimeFormat)
+}
+
+type deleteDevicesRequest struct {
+	Ids []int `json:"ids"`
+}
+
+// validateDeviceIds rejects an empty id list so a malformed or missing
+// request body can never resolve to an unscoped "delete everything" query.
+func validateDeviceIds(ids []int) error {
+	if len(ids) == 0 {
+		return errors.New("DeviceIdsEmpty")
+	}
+	return nil
+}
+
+func (c *DevicesController) HandleDelete() mvc.Result {
+	var req deleteDevicesRequest
+	if err := c.Ctx.ReadJSON(&req); err != nil {
+		return c.Error(nil, err.Error())
+	}
+	if err := validateDeviceIds(req.Ids); err != nil {
+		return c.Error(nil, err.Error())
+	}
+	if _, err := c.Db.In("id", req.Ids).Delete(&model.Device{}); err != nil {
+		return c.Error(nil, err.Error())
+	}
+	return c.Success(nil, "DeviceDeleteSuccess")
 }

@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { NPopover, useMessage } from 'naive-ui';
+import { NPopconfirm, NPopover, useMessage } from 'naive-ui';
+import { deleteDevices } from '@/service/api/devices';
 import { $t } from '@/locales';
 
 interface Props {
+  deviceId?: number;
   rustdeskId: string;
   hostname?: string;
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{ deleted: [] }>();
 
 const message = useMessage();
 const popoverVisible = ref(false);
@@ -74,6 +77,19 @@ function copyId() {
   }
   message.info(props.rustdeskId);
 }
+
+async function handleDelete() {
+  if (!props.deviceId) {
+    message.warning($t('page.devices.connect.missingId' as App.I18n.I18nKey));
+    return;
+  }
+  const res = await deleteDevices({ ids: [props.deviceId] });
+  if (res.error === null) {
+    message.success($t('common.deleteSuccess'));
+    popoverVisible.value = false;
+    emit('deleted');
+  }
+}
 </script>
 
 <template>
@@ -134,6 +150,16 @@ function copyId() {
         <SvgIcon icon="solar:info-circle-linear" />
         <span>{{ $t('page.devices.connect.terminalHint' as App.I18n.I18nKey) }}</span>
       </footer>
+
+      <NPopconfirm @positive-click="handleDelete">
+        <template #trigger>
+          <button type="button" class="connect-delete">
+            <SvgIcon icon="solar:trash-bin-trash-bold-duotone" />
+            {{ $t('common.delete') }}
+          </button>
+        </template>
+        {{ $t('common.confirmDelete') }}
+      </NPopconfirm>
     </div>
   </NPopover>
 </template>
@@ -290,5 +316,34 @@ function copyId() {
   margin-top: 1px;
   color: var(--accent-cyan);
   font-size: 14px;
+}
+
+.connect-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.02em;
+  padding: 10px 12px;
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+
+.connect-delete:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.connect-delete :deep(svg) {
+  font-size: 15px;
 }
 </style>
