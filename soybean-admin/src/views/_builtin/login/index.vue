@@ -31,7 +31,6 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
 
 <template>
   <div class="login-shell">
-    <div class="login-grid" aria-hidden="true"></div>
     <section class="login-story">
       <div class="login-brand">
         <span class="brand-mark"><SvgIcon icon="solar:monitor-smartphone-bold-duotone" /></span>
@@ -101,15 +100,6 @@ const activeModule = computed(() => moduleMap[props.module || 'pwd-login']);
   grid-template-columns: minmax(420px, 1.08fr) minmax(440px, 0.92fr);
   overflow: hidden;
   background: #0a0a0a;
-}
-
-.login-grid {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(245, 245, 240, 0.16) 1.5px, transparent 1.5px);
-  background-position: -12px -12px;
-  background-size: 28px 28px;
-  pointer-events: none;
 }
 
 .login-story,

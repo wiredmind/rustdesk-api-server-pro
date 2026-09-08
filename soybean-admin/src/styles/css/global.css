@@ -81,18 +81,6 @@ body::before {
   transition: opacity 300ms ease;
 }
 
-body::after {
-  position: fixed;
-  z-index: 0;
-  inset: 0;
-  background-image: radial-gradient(var(--surface-border) 1.5px, transparent 1.5px);
-  background-position: -12px -12px;
-  background-size: 26px 26px;
-  content: '';
-  opacity: 0.14;
-  pointer-events: none;
-}
-
 #app {
   isolation: isolate;
   position: relative;
