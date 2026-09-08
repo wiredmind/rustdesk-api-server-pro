@@ -38,7 +38,7 @@ const { isFullscreen, toggle } = useFullscreen();
       <GlobalBreadcrumb v-if="!appStore.isMobile" class="ml-12px" />
       <div v-if="!appStore.isMobile" class="header-status ml-18px">
         <span class="status-dot"></span>
-        Private cloud online
+        Online
       </div>
     </div>
     <div class="h-full flex-y-center justify-end">
@@ -61,7 +61,7 @@ const { isFullscreen, toggle } = useFullscreen();
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  border: 1px solid var(--surface-border);
+  border: 2px solid var(--surface-border);
   border-radius: 999px;
   background: var(--surface-muted);
   color: var(--text-muted);

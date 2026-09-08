@@ -106,7 +106,6 @@ function copySecret() {
     </NFormItem>
     <div class="form-meta">
       <NCheckbox>{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
-      <span>Protected access</span>
     </div>
     <NButton
       attr-type="submit"
@@ -183,23 +182,14 @@ function copySecret() {
 
 .auth-form :deep(.n-input__prefix) {
   margin-right: 8px;
-  color: var(--accent-bright);
+  color: var(--accent);
   font-size: 18px;
 }
 
 .form-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin: 4px 0 20px;
-}
-
-.form-meta > span {
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .submit-button {

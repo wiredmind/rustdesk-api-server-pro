@@ -375,7 +375,7 @@ function copySelectedIds() {
 }
 
 .table-kicker {
-  color: var(--accent-bright);
+  color: var(--accent);
   font-size: 10px;
   font-weight: 760;
   letter-spacing: 0.14em;
@@ -422,7 +422,7 @@ function copySelectedIds() {
 }
 
 .selection-pill.is-active {
-  background: var(--accent-bright);
+  background: var(--accent-fill);
   color: #ffffff;
 }
 
@@ -440,7 +440,7 @@ function copySelectedIds() {
 }
 
 .selection-pill.is-active small {
-  color: var(--accent-bright);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .selection-pill-action {
@@ -499,11 +499,11 @@ function copySelectedIds() {
 }
 
 .device-table :deep(.n-data-table-tr.device-row:hover) {
-  box-shadow: inset 3px 0 0 0 var(--accent-bright);
+  box-shadow: inset 3px 0 0 0 var(--accent);
 }
 
 .device-table :deep(.n-data-table-tr.device-row.is-selected) {
-  background: color-mix(in srgb, var(--accent-bright) 16%, var(--surface)) !important;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface)) !important;
 }
 
 .device-table :deep(.cell-index) {
@@ -527,7 +527,7 @@ function copySelectedIds() {
   place-items: center;
   border: 2px solid var(--surface-border);
   border-radius: var(--radius-sm);
-  background: var(--accent-bright);
+  background: var(--accent-fill);
   color: white;
   font-size: 13px;
   font-weight: 800;
@@ -669,7 +669,7 @@ function copySelectedIds() {
 }
 
 .device-table :deep(.cell-status.is-online .cell-status-label) {
-  color: var(--accent-bright);
+  color: var(--accent);
 }
 
 .device-table :deep(.cell-status.is-offline .cell-status-label) {

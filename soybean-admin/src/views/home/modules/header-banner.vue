@@ -102,7 +102,7 @@ const authStore = useAuthStore();
 }
 
 .hero-meta span :deep(svg) {
-  color: var(--accent-bright);
+  color: var(--accent);
   font-size: 15px;
 }
 
@@ -163,7 +163,7 @@ const authStore = useAuthStore();
 .node-two {
   right: 22px;
   bottom: 92px;
-  background: var(--accent-bright);
+  background: var(--accent);
   box-shadow: 0 0 24px rgba(167, 139, 250, 0.8);
 }
 

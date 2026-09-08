@@ -103,7 +103,6 @@ async function handleDelete() {
     </template>
     <div class="connect-popover">
       <header class="connect-popover-head">
-        <span class="connect-popover-eyebrow">Connect from portal</span>
         <strong>{{ props.hostname || props.rustdeskId }}</strong>
         <code>{{ props.rustdeskId }}</code>
       </header>
@@ -141,7 +140,6 @@ async function handleDelete() {
           <SvgIcon icon="solar:copy-bold-duotone" />
           <div>
             <strong>Copy ID</strong>
-            <small>Share with family</small>
           </div>
         </button>
       </section>
@@ -171,7 +169,7 @@ async function handleDelete() {
   gap: 8px;
   border: 2px solid var(--surface-border);
   border-radius: var(--radius-sm);
-  background: var(--accent-bright);
+  background: var(--accent-fill);
   color: #ffffff;
   font-size: 11px;
   font-weight: 800;
@@ -214,14 +212,6 @@ async function handleDelete() {
   gap: 4px;
   border-bottom: 1px solid var(--surface-border);
   padding-bottom: 14px;
-}
-
-.connect-popover-eyebrow {
-  color: var(--accent-bright);
-  font-size: 9px;
-  font-weight: 760;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .connect-popover-head strong {
@@ -269,7 +259,7 @@ async function handleDelete() {
 }
 
 .connect-card :deep(svg) {
-  color: var(--accent-bright);
+  color: var(--accent);
   font-size: 18px;
 }
 

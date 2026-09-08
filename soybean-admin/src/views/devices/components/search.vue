@@ -133,7 +133,7 @@ function search() {
 
 .advanced-toggle:hover,
 .advanced-toggle.is-active {
-  background: var(--accent-bright);
+  background: var(--accent-fill);
   color: #ffffff;
   transform: translate(-1px, -1px);
   box-shadow: 3px 3px 0 0 var(--shadow-color);
