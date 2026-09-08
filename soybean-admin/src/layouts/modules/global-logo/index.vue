@@ -42,7 +42,7 @@ withDefaults(defineProps<Props>(), {
   place-items: center;
   border: 2px solid var(--surface-border);
   border-radius: var(--radius-sm);
-  background: var(--accent);
+  background: var(--accent-fill);
   box-shadow: var(--shadow-hard-sm);
   color: white;
 }

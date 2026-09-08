@@ -94,7 +94,7 @@ select {
 }
 
 ::selection {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: #ffffff;
 }
 
@@ -262,7 +262,7 @@ aside[class*='_layout-sider_'] > .bg-container {
 }
 
 .n-button--primary-type {
-  background: var(--accent) !important;
+  background: var(--accent-fill) !important;
   color: #ffffff !important;
 }
 
